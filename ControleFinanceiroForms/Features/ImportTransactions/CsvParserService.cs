@@ -45,16 +45,18 @@ public class CsvParserService : ICsvParserService
                 // Try different number formats (comma vs dot)
                 string amountStr = values[2].Trim();
                 decimal amount;
+                int lastComma = amountStr.LastIndexOf(',');
+                int lastDot = amountStr.LastIndexOf('.');
                 
-                if (amountStr.Contains(',') && !amountStr.Contains('.'))
+                if (lastComma > lastDot)
                 {
-                    // Likely pt-BR format: "1234,56"
-                    amount = decimal.Parse(amountStr, new CultureInfo("pt-BR"));
+                    // Comma is the decimal separator (e.g., pt-BR)
+                    amount = decimal.Parse(amountStr, NumberStyles.Any, new CultureInfo("pt-BR"));
                 }
                 else
                 {
-                    // Likely invariant format: "1234.56"
-                    amount = decimal.Parse(amountStr, CultureInfo.InvariantCulture);
+                    // Dot is the decimal separator (or no separator) (Invariant)
+                    amount = decimal.Parse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture);
                 }
 
                 var tx = Transacao.Create(date, description, amount);

@@ -62,16 +62,18 @@ public partial class ImportTransactionsViewModel : ObservableObject
         try
         {
             var parsedTransactions = await _parserService.ParseCsvAsync(stream);
-
-            var existingTransactions = await _transactionRepository.GetAllAsync();
-            var existingHashes = new HashSet<string>(existingTransactions.Select(t => t.ChaveExclusiva));
+            var parsedTransactionsList = parsedTransactions.ToList();
+            var incomingHashes = parsedTransactionsList.Select(t => t.ChaveExclusiva).Distinct().ToList();
+            
+            var existingHashesList = await _transactionRepository.GetExistingHashesAsync(incomingHashes);
+            var existingHashes = new HashSet<string>(existingHashesList);
 
             int addedCount = 0;
             int duplicateCount = 0;
 
             var toAdd = new List<Transacao>();
 
-            foreach (var tx in parsedTransactions)
+            foreach (var tx in parsedTransactionsList)
             {
                 if (SelectedCategory != null)
                 {

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControleFinanceiroForms"
+        xmlns:inv="clr-namespace:ControleFinanceiroForms.Features.Investments"
         xmlns:import="clr-namespace:ControleFinanceiroForms.Features.ImportTransactions"
         xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
         mc:Ignorable="d"
@@ -16,6 +17,9 @@
             </TabItem>
             <TabItem Header="Importar Transações" FontSize="16">
                 <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />
+            </TabItem>
+            <TabItem Header="Meus Investimentos" FontSize="16">
+                <inv:InvestmentsView x:Name="InvestmentsViewControl" />
             </TabItem>
         </TabControl>
     </Grid>

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace ControleFinanceiroForms;
 
@@ -17,6 +18,20 @@ public partial class App : Application
     public App()
     {
         _host = Host.CreateDefaultBuilder()
+            .ConfigureLogging((context, logging) =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    logging.SetMinimumLevel(LogLevel.Debug);
+                }
+                else
+                {
+                    logging.SetMinimumLevel(LogLevel.Warning);
+                }
+            })
             .ConfigureServices((context, services) =>
             {
                 services.AddSingleton<MainWindow>();

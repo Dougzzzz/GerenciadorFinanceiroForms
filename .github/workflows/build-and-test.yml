@@ -1,0 +1,88 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - 'feature/**'
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 9 / Windows)
+    runs-on: windows-latest
+
+    steps:
+      # ────────────────────────────────────────────────────────────
+      # 1. Check out source
+      # ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ────────────────────────────────────────────────────────────
+      # 2. Set up .NET 9 SDK
+      # ────────────────────────────────────────────────────────────
+      - name: Set up .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Cache NuGet packages (keyed on .csproj lock files)
+      # ────────────────────────────────────────────────────────────
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Restore dependencies
+      # ────────────────────────────────────────────────────────────
+      - name: Restore NuGet packages
+        run: dotnet restore ControleFinanceiroForms.sln
+
+      # ────────────────────────────────────────────────────────────
+      # 5. Build — fail on any error or warning treated as error
+      # ────────────────────────────────────────────────────────────
+      - name: Build solution
+        run: dotnet build ControleFinanceiroForms.sln --no-restore --configuration Release
+
+      # ────────────────────────────────────────────────────────────
+      # 6. Run tests with coverage collection
+      # ────────────────────────────────────────────────────────────
+      - name: Run tests with coverage
+        run: >
+          dotnet test ControleFinanceiroForms.sln
+          --no-build
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+          --logger "trx;LogFileName=test-results.trx"
+
+      # ────────────────────────────────────────────────────────────
+      # 7. Upload coverage report as workflow artifact
+      # ────────────────────────────────────────────────────────────
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: TestResults/**/coverage.cobertura.xml
+          retention-days: 30
+
+      # ────────────────────────────────────────────────────────────
+      # 8. Upload test results (optional — useful for GitHub UI)
+      # ────────────────────────────────────────────────────────────
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults/**/*.trx
+          retention-days: 30

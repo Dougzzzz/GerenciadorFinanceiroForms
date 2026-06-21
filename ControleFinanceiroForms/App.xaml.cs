@@ -17,6 +17,7 @@ namespace ControleFinanceiroForms;
 public partial class App : Application
 {
     private readonly IHost _host;
+    private IServiceScope? _appScope;
 
     public App()
     {
@@ -66,7 +67,7 @@ public partial class App : Application
                 services.AddTransient<InvestmentsViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
-                services.AddSingleton<MainWindow>();
+                services.AddTransient<MainWindow>();
             })
             .Build();
     }
@@ -77,12 +78,13 @@ public partial class App : Application
         {
             await _host.StartAsync();
 
+            _appScope = _host.Services.CreateScope();
+
             // Apply pending migrations on startup (idempotent)
-            using var scope = _host.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var db = _appScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Database.MigrateAsync();
 
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            var mainWindow = _appScope.ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
             base.OnStartup(e);
         }
@@ -101,6 +103,7 @@ public partial class App : Application
     {
         try
         {
+            _appScope?.Dispose();
             await _host.StopAsync();
         }
         finally

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using ControleFinanceiroForms.Data;
+using ControleFinanceiroForms.Features.Investments;
 
 namespace ControleFinanceiroForms;
 
@@ -57,6 +58,12 @@ public partial class App : Application
                         options.EnableSensitiveDataLogging();
                     }
                 });
+
+                // ── Services & Repositories ────────────────────────────────
+                services.AddScoped<IInvestmentRepository, InvestmentRepository>();
+
+                // ── ViewModels ─────────────────────────────────────────────
+                services.AddTransient<InvestmentsViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
                 services.AddSingleton<MainWindow>();

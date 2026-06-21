@@ -1,11 +1,8 @@
-using System.Configuration;
-using System.Data;
 using System.Windows;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace ControleFinanceiroForms;
 
@@ -29,16 +26,34 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        await _host.StartAsync();
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-        base.OnStartup(e);
+        try
+        {
+            await _host.StartAsync();
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+            base.OnStartup(e);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Falha ao iniciar o aplicativo:\n{ex.Message}",
+                "Erro de Inicialização",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(1);
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)
     {
-        await _host.StopAsync();
-        _host.Dispose();
-        base.OnExit(e);
+        try
+        {
+            await _host.StopAsync();
+        }
+        finally
+        {
+            _host.Dispose();
+            base.OnExit(e);
+        }
     }
 }

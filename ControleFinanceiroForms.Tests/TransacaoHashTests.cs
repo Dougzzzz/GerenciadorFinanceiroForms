@@ -25,14 +25,10 @@ public sealed class TransacaoHashTests
         const string description = "Supermercado Carrefour";
         const decimal amount = 250.75m;
 
-        var tx1 = new Transacao { Date = date, Description = description, Amount = amount };
-        var tx2 = new Transacao { Date = date, Description = description, Amount = amount };
+        var tx1 = Transacao.Create(date, description, amount);
+        var tx2 = Transacao.Create(date, description, amount);
 
-        // Act
-        tx1.GerarHash();
-        tx2.GerarHash();
-
-        // Assert
+        // Assert — Create() calls GerarHash() internally
         Assert.AreEqual(tx1.ChaveExclusiva, tx2.ChaveExclusiva,
             "Identical transactions must produce identical hashes (duplicate detection).");
     }
@@ -47,12 +43,8 @@ public sealed class TransacaoHashTests
         var date = new DateTime(2026, 1, 15);
         const string description = "Restaurante X";
 
-        var tx1 = new Transacao { Date = date, Description = description, Amount = 100.00m };
-        var tx2 = new Transacao { Date = date, Description = description, Amount = 100.01m };
-
-        // Act
-        tx1.GerarHash();
-        tx2.GerarHash();
+        var tx1 = Transacao.Create(date, description, 100.00m);
+        var tx2 = Transacao.Create(date, description, 100.01m);
 
         // Assert
         Assert.AreNotEqual(tx1.ChaveExclusiva, tx2.ChaveExclusiva,
@@ -69,12 +61,8 @@ public sealed class TransacaoHashTests
         var date = new DateTime(2026, 2, 1);
         const decimal amount = 50.00m;
 
-        var tx1 = new Transacao { Date = date, Description = "Farmácia A", Amount = amount };
-        var tx2 = new Transacao { Date = date, Description = "Farmácia B", Amount = amount };
-
-        // Act
-        tx1.GerarHash();
-        tx2.GerarHash();
+        var tx1 = Transacao.Create(date, "Farmácia A", amount);
+        var tx2 = Transacao.Create(date, "Farmácia B", amount);
 
         // Assert
         Assert.AreNotEqual(tx1.ChaveExclusiva, tx2.ChaveExclusiva,
@@ -91,12 +79,8 @@ public sealed class TransacaoHashTests
         const string description = "Netflix";
         const decimal amount = 39.90m;
 
-        var tx1 = new Transacao { Date = new DateTime(2026, 3, 1), Description = description, Amount = amount };
-        var tx2 = new Transacao { Date = new DateTime(2026, 4, 1), Description = description, Amount = amount };
-
-        // Act
-        tx1.GerarHash();
-        tx2.GerarHash();
+        var tx1 = Transacao.Create(new DateTime(2026, 3, 1), description, amount);
+        var tx2 = Transacao.Create(new DateTime(2026, 4, 1), description, amount);
 
         // Assert
         Assert.AreNotEqual(tx1.ChaveExclusiva, tx2.ChaveExclusiva,
@@ -110,15 +94,7 @@ public sealed class TransacaoHashTests
     public void GerarHash_ProducesValidSha256HexString()
     {
         // Arrange
-        var tx = new Transacao
-        {
-            Date = new DateTime(2026, 6, 1),
-            Description = "Test",
-            Amount = 1.00m
-        };
-
-        // Act
-        tx.GerarHash();
+        var tx = Transacao.Create(new DateTime(2026, 6, 1), "Test", 1.00m);
 
         // Assert
         Assert.AreEqual(64, tx.ChaveExclusiva.Length, "SHA-256 hex string must be 64 characters.");
@@ -132,21 +108,54 @@ public sealed class TransacaoHashTests
     [TestMethod]
     public void GerarHash_IsDeterministic_SameInputSameOutput()
     {
-        // Arrange
-        var tx = new Transacao
-        {
-            Date = new DateTime(2026, 1, 1),
-            Description = "Test determinism",
-            Amount = 99.99m
-        };
-
-        // Act
-        tx.GerarHash();
+        // Arrange — Create() already calls GerarHash(); capture that first hash.
+        var tx = Transacao.Create(new DateTime(2026, 1, 1), "Test determinism", 99.99m);
         var firstHash = tx.ChaveExclusiva;
-        tx.GerarHash(); // call again
+
+        // Act — explicitly call GerarHash() again to verify idempotence.
+        tx.GerarHash();
         var secondHash = tx.ChaveExclusiva;
 
         // Assert
         Assert.AreEqual(firstHash, secondHash, "GerarHash must be deterministic.");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Issue 005 (culture-invariant hash)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GerarHash must produce the SAME ChaveExclusiva regardless of the
+    /// current thread culture. A period is always used as the decimal separator
+    /// in the hash input (InvariantCulture).
+    /// Regression guard for issue_005 (cross-locale hash inconsistency).
+    /// </summary>
+    [TestMethod]
+    public void GerarHash_IsCultureInvariant_SameHashOnAnyLocale()
+    {
+        const decimal amount = 1234.50m;
+        var date = new DateTime(2026, 1, 1);
+        const string description = "Cross-locale test";
+
+        // Compute hash with InvariantCulture thread (default in tests)
+        var txInvariant = Transacao.Create(date, description, amount);
+
+        // Compute hash with pt-BR culture active on the thread
+        string hashPtBr;
+        var originalCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+        try
+        {
+            System.Threading.Thread.CurrentThread.CurrentCulture =
+                new System.Globalization.CultureInfo("pt-BR");
+            var txPtBr = Transacao.Create(date, description, amount);
+            hashPtBr = txPtBr.ChaveExclusiva;
+        }
+        finally
+        {
+            System.Threading.Thread.CurrentThread.CurrentCulture = originalCulture;
+        }
+
+        Assert.AreEqual(txInvariant.ChaveExclusiva, hashPtBr,
+            "GerarHash must produce identical hashes regardless of thread culture (InvariantCulture required).");
     }
 }

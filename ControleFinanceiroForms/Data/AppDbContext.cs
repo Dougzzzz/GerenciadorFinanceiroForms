@@ -66,6 +66,10 @@ public class AppDbContext : DbContext
             entity.Property(m => m.Month).IsRequired();
             entity.Property(m => m.Year).IsRequired();
 
+            // Enforce one goal per category per month/year to prevent duplicate
+            // budget goals that would silently double "Realizado vs. Orçado" totals.
+            entity.HasIndex(m => new { m.CategoryId, m.Month, m.Year }).IsUnique();
+
             entity.HasOne(m => m.Categoria)
                   .WithMany(c => c.MetasGasto)
                   .HasForeignKey(m => m.CategoryId)

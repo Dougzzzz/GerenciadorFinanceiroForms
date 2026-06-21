@@ -1,5 +1,6 @@
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Data.Entities;
+using ControleFinanceiroForms.Tests.Fakes;
 using Microsoft.EntityFrameworkCore;
 
 namespace ControleFinanceiroForms.Tests;
@@ -69,14 +70,8 @@ public sealed class AppDbContextIntegrationTests
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var tx = new Transacao
-        {
-            Id = Guid.NewGuid(),
-            Date = new DateTime(2026, 5, 10),
-            Description = "Conta de luz",
-            Amount = 320.50m
-        };
-        tx.GerarHash();
+        var tx = Transacao.Create(new DateTime(2026, 5, 10), "Conta de luz", 320.50m);
+        tx.Id = Guid.NewGuid();
 
         // Act
         await context.Transacoes.AddAsync(tx);
@@ -102,15 +97,8 @@ public sealed class AppDbContextIntegrationTests
         await using var context = CreateInMemoryContext();
 
         var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Transporte" };
-        var tx = new Transacao
-        {
-            Id = Guid.NewGuid(),
-            Date = DateTime.Today,
-            Description = "Uber",
-            Amount = 25.00m,
-            CategoryId = categoria.Id
-        };
-        tx.GerarHash();
+        var tx = Transacao.Create(DateTime.Today, "Uber", 25.00m, categoria.Id);
+        tx.Id = Guid.NewGuid();
 
         // Act
         await context.Categorias.AddAsync(categoria);
@@ -166,23 +154,13 @@ public sealed class AppDbContextIntegrationTests
         // Arrange
         await using var context = CreateInMemoryContext();
 
-        var tx1 = new Transacao
-        {
-            Id = Guid.NewGuid(),
-            Date = new DateTime(2026, 1, 1),
-            Description = "Duplicate",
-            Amount = 10.00m
-        };
-        tx1.GerarHash();
+        var tx1 = Transacao.Create(new DateTime(2026, 1, 1), "Duplicate", 10.00m);
+        tx1.Id = Guid.NewGuid();
 
-        var tx2 = new Transacao
-        {
-            Id = Guid.NewGuid(),
-            Date = tx1.Date,
-            Description = tx1.Description,
-            Amount = tx1.Amount,
-            ChaveExclusiva = tx1.ChaveExclusiva // same hash
-        };
+        // Create a second transaction with the same hash (manually override to simulate duplicate)
+        var tx2 = Transacao.Create(new DateTime(2026, 1, 1), "Duplicate", 10.00m);
+        tx2.Id = Guid.NewGuid();
+        // tx2 already has the same ChaveExclusiva as tx1 (identical fields)
 
         // Act
         await context.Transacoes.AddAsync(tx1);
@@ -194,5 +172,103 @@ public sealed class AppDbContextIntegrationTests
         await Assert.ThrowsExceptionAsync<DbUpdateException>(
             async () => await context.SaveChangesAsync(),
             "Saving a duplicate ChaveExclusiva must fail due to the unique index.");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Issue 003 (MetaGasto unique constraint)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Attempting to save two MetaGasto with the same (CategoryId, Month, Year)
+    /// must throw a DbUpdateException.
+    /// Regression guard for issue_003.
+    /// </summary>
+    [TestMethod]
+    public async Task Save_DuplicateMetaGasto_SameCategoryMonthYear_ThrowsDbUpdateException()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Alimentação" };
+        await context.Categorias.AddAsync(categoria);
+        await context.SaveChangesAsync();
+
+        var meta1 = new MetaGasto
+        {
+            Id = Guid.NewGuid(),
+            CategoryId = categoria.Id,
+            Month = 6,
+            Year = 2026,
+            TargetAmount = 1000.00m
+        };
+        var meta2 = new MetaGasto
+        {
+            Id = Guid.NewGuid(),
+            CategoryId = categoria.Id,
+            Month = 6,    // same month
+            Year = 2026,  // same year
+            TargetAmount = 2000.00m
+        };
+
+        // Act
+        await context.MetasGasto.AddAsync(meta1);
+        await context.SaveChangesAsync();
+
+        await context.MetasGasto.AddAsync(meta2);
+
+        // Assert
+        await Assert.ThrowsExceptionAsync<DbUpdateException>(
+            async () => await context.SaveChangesAsync(),
+            "Saving two MetaGasto with the same (CategoryId, Month, Year) must fail due to the unique index.");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Issue 004 (FakeTransactionRepository uniqueness)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// FakeTransactionRepository.AddAsync must throw when a transaction with the
+    /// same non-empty ChaveExclusiva is already stored.
+    /// Regression guard for issue_004.
+    /// </summary>
+    [TestMethod]
+    public async Task FakeRepo_AddAsync_DuplicateChaveExclusiva_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var repo = new FakeTransactionRepository();
+        var tx1 = Transacao.Create(new DateTime(2026, 1, 1), "Same Transaction", 50.00m);
+        var tx2 = Transacao.Create(new DateTime(2026, 1, 1), "Same Transaction", 50.00m);
+
+        await repo.AddAsync(tx1);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            async () => await repo.AddAsync(tx2),
+            "FakeTransactionRepository must reject duplicate ChaveExclusiva like the real SQLite unique index.");
+    }
+
+    /// <summary>
+    /// FakeTransactionRepository.AddRangeAsync must throw when any transaction in the
+    /// batch has a ChaveExclusiva that already exists in the store.
+    /// Regression guard for issue_004.
+    /// </summary>
+    [TestMethod]
+    public async Task FakeRepo_AddRangeAsync_DuplicateChaveExclusiva_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var repo = new FakeTransactionRepository();
+        var tx1 = Transacao.Create(new DateTime(2026, 2, 1), "Batch Duplicate", 75.00m);
+        await repo.AddAsync(tx1);
+
+        var duplicateBatch = new[]
+        {
+            Transacao.Create(new DateTime(2026, 3, 1), "Unique in batch", 10.00m),
+            Transacao.Create(new DateTime(2026, 2, 1), "Batch Duplicate", 75.00m) // duplicate
+        };
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            async () => await repo.AddRangeAsync(duplicateBatch),
+            "FakeTransactionRepository.AddRangeAsync must detect and reject duplicates.");
     }
 }

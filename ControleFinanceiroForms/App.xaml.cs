@@ -43,12 +43,15 @@ public partial class App : Application
                 Directory.CreateDirectory(dbFolder);
                 var dbPath = Path.Combine(dbFolder, "controle-financeiro.db");
 
-                services.AddDbContext<AppDbContext>(options =>
+                services.AddDbContext<AppDbContext>((serviceProvider, options) =>
                 {
                     options.UseSqlite($"Data Source={dbPath}");
 
                     // Surface SQL queries at Debug level via the DI-provided ILoggerFactory.
                     // This depends on the logging setup above (task_09).
+                    var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+                    options.UseLoggerFactory(loggerFactory);
+
                     if (context.HostingEnvironment.IsDevelopment())
                     {
                         options.EnableSensitiveDataLogging();

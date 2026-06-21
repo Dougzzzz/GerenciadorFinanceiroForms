@@ -15,4 +15,5 @@ public interface ITransactionRepository
     Task AddRangeAsync(IEnumerable<Transacao> transactions);
     Task UpdateAsync(Transacao transaction);
     Task DeleteAsync(Guid id);
+    Task<IEnumerable<string>> GetExistingHashesAsync(IEnumerable<string> hashes);
 }

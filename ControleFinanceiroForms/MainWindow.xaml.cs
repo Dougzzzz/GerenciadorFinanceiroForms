@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using ControleFinanceiroForms.Features.Investments;
+using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
 
 namespace ControleFinanceiroForms;
@@ -11,7 +12,7 @@ namespace ControleFinanceiroForms;
 [ExcludeFromCodeCoverage]
 public partial class MainWindow : Window
 {
-    public MainWindow(InvestmentsViewModel investmentsViewModel, CategoriesViewModel categoriesViewModel)
+    public MainWindow(InvestmentsViewModel investmentsViewModel, ImportTransactionsViewModel importViewModel, CategoriesViewModel categoriesViewModel)
     {
         InitializeComponent();
         
@@ -26,9 +27,14 @@ public partial class MainWindow : Window
             {
                 await categoriesViewModel.LoadCategoriesCommand.ExecuteAsync(null);
             }
+            if (importViewModel.LoadCategoriesCommand.CanExecute(null))
+            {
+                await importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
+            }
         };
 
         InvestmentsViewControl.DataContext = investmentsViewModel;
+        ImportTransactionsViewControl.DataContext = importViewModel;
         CategoriesViewControl.DataContext = categoriesViewModel;
     }
 }

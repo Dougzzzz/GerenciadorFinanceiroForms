@@ -7,6 +7,12 @@ namespace ControleFinanceiroForms.Tests.Fakes;
 /// Manual in-memory stub for <see cref="ITransactionRepository"/>.
 /// Used exclusively in unit tests — no mocking libraries involved (ADR-004).
 /// </summary>
+/// <remarks>
+/// Mirrors the real SQLite unique-index behaviour on <see cref="Transacao.ChaveExclusiva"/>:
+/// <see cref="AddAsync"/> and <see cref="AddRangeAsync"/> throw
+/// <see cref="InvalidOperationException"/> when a duplicate non-empty hash is detected,
+/// preventing false-negative tests that pass against the fake but fail in production.
+/// </remarks>
 public sealed class FakeTransactionRepository : ITransactionRepository
 {
     private readonly List<Transacao> _store = new();
@@ -19,13 +25,31 @@ public sealed class FakeTransactionRepository : ITransactionRepository
 
     public Task AddAsync(Transacao transaction)
     {
+        if (!string.IsNullOrEmpty(transaction.ChaveExclusiva)
+            && _store.Any(t => t.ChaveExclusiva == transaction.ChaveExclusiva))
+        {
+            throw new InvalidOperationException(
+                $"Duplicate ChaveExclusiva detected: {transaction.ChaveExclusiva}");
+        }
+
         _store.Add(transaction);
         return Task.CompletedTask;
     }
 
     public Task AddRangeAsync(IEnumerable<Transacao> transactions)
     {
-        _store.AddRange(transactions);
+        foreach (var transaction in transactions)
+        {
+            if (!string.IsNullOrEmpty(transaction.ChaveExclusiva)
+                && _store.Any(t => t.ChaveExclusiva == transaction.ChaveExclusiva))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate ChaveExclusiva detected: {transaction.ChaveExclusiva}");
+            }
+
+            _store.Add(transaction);
+        }
+
         return Task.CompletedTask;
     }
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -9,8 +10,36 @@ namespace ControleFinanceiroForms.Data.Entities;
 /// computed from Date + Description + Amount, used to detect duplicate
 /// imports across CSV/PDF files — identical to the legacy Angular/.NET logic.
 /// </summary>
+/// <remarks>
+/// Use the <see cref="Create"/> factory method to create new instances.
+/// The parameterless constructor is reserved for EF Core materialisation.
+/// </remarks>
 public class Transacao
 {
+    /// <summary>
+    /// EF Core requires a parameterless constructor to materialise entities
+    /// from the database. Application code must use <see cref="Create"/> instead.
+    /// </summary>
+    private Transacao() { }
+
+    /// <summary>
+    /// Creates a new <see cref="Transacao"/> with <see cref="ChaveExclusiva"/>
+    /// already computed. This is the only way application code should create
+    /// transactions — it guarantees the deduplication hash is always set.
+    /// </summary>
+    public static Transacao Create(DateTime date, string description, decimal amount, Guid? categoryId = null)
+    {
+        var tx = new Transacao
+        {
+            Date = date,
+            Description = description,
+            Amount = amount,
+            CategoryId = categoryId
+        };
+        tx.GerarHash();
+        return tx;
+    }
+
     public Guid Id { get; set; } = Guid.NewGuid();
 
     public DateTime Date { get; set; }
@@ -36,7 +65,8 @@ public class Transacao
 
     /// <summary>
     /// Computes and stores the <see cref="ChaveExclusiva"/> SHA-256 hash.
-    /// Must be called before persisting a new <see cref="Transacao"/>.
+    /// Uses <see cref="CultureInfo.InvariantCulture"/> for Amount formatting
+    /// to guarantee consistent output regardless of machine locale.
     /// </summary>
     /// <remarks>
     /// Hash input = "yyyy-MM-dd|description|amount" (amount formatted with
@@ -44,7 +74,10 @@ public class Transacao
     /// </remarks>
     public void GerarHash()
     {
-        var input = $"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}";
+        // FormattableString.Invariant forces all format arguments — including
+        // the decimal Amount — to use InvariantCulture, preventing locale-
+        // specific separators (e.g., "," in pt-BR) from producing different hashes.
+        var input = FormattableString.Invariant($"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}");
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         ChaveExclusiva = Convert.ToHexString(bytes).ToLowerInvariant();
     }

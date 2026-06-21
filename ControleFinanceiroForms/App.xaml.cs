@@ -63,6 +63,7 @@ public partial class App : Application
                 });
 
                 // ── Services & Repositories ────────────────────────────────
+                services.AddScoped<ITransactionRepository, TransactionRepository>();
                 services.AddScoped<IInvestmentRepository, InvestmentRepository>();
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
                 services.AddScoped<ICsvParserService, CsvParserService>();

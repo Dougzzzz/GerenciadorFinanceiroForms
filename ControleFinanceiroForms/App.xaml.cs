@@ -1,9 +1,11 @@
+using System.IO;
 using System.Windows;
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using ControleFinanceiroForms.Data;
 
 namespace ControleFinanceiroForms;
 
@@ -34,6 +36,26 @@ public partial class App : Application
             })
             .ConfigureServices((context, services) =>
             {
+                // ── Database ───────────────────────────────────────────────
+                var dbFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ControleFinanceiro");
+                Directory.CreateDirectory(dbFolder);
+                var dbPath = Path.Combine(dbFolder, "controle-financeiro.db");
+
+                services.AddDbContext<AppDbContext>(options =>
+                {
+                    options.UseSqlite($"Data Source={dbPath}");
+
+                    // Surface SQL queries at Debug level via the DI-provided ILoggerFactory.
+                    // This depends on the logging setup above (task_09).
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        options.EnableSensitiveDataLogging();
+                    }
+                });
+
+                // ── Presentation ───────────────────────────────────────────
                 services.AddSingleton<MainWindow>();
             })
             .Build();
@@ -44,6 +66,12 @@ public partial class App : Application
         try
         {
             await _host.StartAsync();
+
+            // Apply pending migrations on startup (idempotent)
+            using var scope = _host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
             base.OnStartup(e);

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Features.ImportTransactions;
+using ControleFinanceiroForms.Features.Categories;
 
 namespace ControleFinanceiroForms;
 
@@ -66,6 +67,7 @@ public partial class App : Application
 
                 // ── ViewModels ─────────────────────────────────────────────
                 services.AddTransient<ImportTransactionsViewModel>();
+                services.AddTransient<CategoriesViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
                 services.AddSingleton<MainWindow>();

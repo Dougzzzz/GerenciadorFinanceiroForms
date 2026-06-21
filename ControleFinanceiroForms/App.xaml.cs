@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using ControleFinanceiroForms.Data;
+using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
 
 namespace ControleFinanceiroForms;
@@ -61,8 +62,11 @@ public partial class App : Application
 
                 // ── Services & Repositories ────────────────────────────────
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
+                services.AddScoped<ICsvParserService, CsvParserService>();
+                services.AddScoped<IFilePickerService, WindowsFilePickerService>();
 
                 // ── ViewModels ─────────────────────────────────────────────
+                services.AddTransient<ImportTransactionsViewModel>();
                 services.AddTransient<CategoriesViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────

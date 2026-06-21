@@ -67,6 +67,16 @@ public sealed class FakeTransactionRepository : ITransactionRepository
         return Task.CompletedTask;
     }
 
+    public Task<IEnumerable<string>> GetExistingHashesAsync(IEnumerable<string> hashes)
+    {
+        var hashSet = new HashSet<string>(hashes);
+        var existing = _store
+            .Select(t => t.ChaveExclusiva)
+            .Where(h => hashSet.Contains(h))
+            .ToList();
+        return Task.FromResult<IEnumerable<string>>(existing);
+    }
+
     // ── Test-helper properties ──────────────────────────────────────
     public int Count => _store.Count;
     public IReadOnlyList<Transacao> All => _store.AsReadOnly();

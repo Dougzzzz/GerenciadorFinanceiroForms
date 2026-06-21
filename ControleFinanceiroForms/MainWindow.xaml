@@ -4,11 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControleFinanceiroForms"
+        xmlns:import="clr-namespace:ControleFinanceiroForms.Features.ImportTransactions"
         xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
         mc:Ignorable="d"
         Title="Controle Financeiro" Height="700" Width="1024"
         Background="#f8f8fa">
     <Grid>
-        <categories:CategoriesView x:Name="CategoriesViewControl" />
+        <TabControl Background="Transparent" BorderThickness="0" Margin="10">
+            <TabItem Header="Categorias" FontSize="16">
+                <categories:CategoriesView x:Name="CategoriesViewControl" />
+            </TabItem>
+            <TabItem Header="Importar Transações" FontSize="16">
+                <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -5,10 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControleFinanceiroForms"
         xmlns:inv="clr-namespace:ControleFinanceiroForms.Features.Investments"
+        xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
         mc:Ignorable="d"
         Title="Controle Financeiro" Height="700" Width="1024"
         Background="#f8f8fa">
     <Grid>
-        <inv:InvestmentsView x:Name="InvestmentsViewControl" />
+        <TabControl Background="Transparent" BorderThickness="0" Margin="10">
+            <TabItem Header="Categorias" FontSize="16">
+                <categories:CategoriesView x:Name="CategoriesViewControl" />
+            </TabItem>
+            <TabItem Header="Meus Investimentos" FontSize="16">
+                <inv:InvestmentsView x:Name="InvestmentsViewControl" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

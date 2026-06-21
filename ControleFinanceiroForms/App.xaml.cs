@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Features.Investments;
+using ControleFinanceiroForms.Features.Categories;
 
 namespace ControleFinanceiroForms;
 
@@ -62,9 +63,11 @@ public partial class App : Application
 
                 // ── Services & Repositories ────────────────────────────────
                 services.AddScoped<IInvestmentRepository, InvestmentRepository>();
+                services.AddScoped<ICategoryRepository, CategoryRepository>();
 
                 // ── ViewModels ─────────────────────────────────────────────
                 services.AddTransient<InvestmentsViewModel>();
+                services.AddTransient<CategoriesViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
                 services.AddTransient<MainWindow>();

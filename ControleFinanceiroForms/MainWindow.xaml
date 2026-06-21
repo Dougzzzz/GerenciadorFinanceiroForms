@@ -1,12 +1,14 @@
-﻿<Window x:Class="ControleFinanceiroForms.MainWindow"
+<Window x:Class="ControleFinanceiroForms.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControleFinanceiroForms"
+        xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Controle Financeiro" Height="700" Width="1024"
+        Background="#f8f8fa">
     <Grid>
-
+        <categories:CategoriesView x:Name="CategoriesViewControl" />
     </Grid>
 </Window>

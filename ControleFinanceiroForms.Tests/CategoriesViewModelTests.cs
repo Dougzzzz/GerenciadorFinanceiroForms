@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Data.Entities;
 using ControleFinanceiroForms.Features.Categories;
 using ControleFinanceiroForms.Tests.Fakes;
@@ -90,5 +91,51 @@ public class CategoriesViewModelTests
         Assert.AreEqual(2, _viewModel.Categories.Count);
         Assert.AreEqual("Cat 1", _viewModel.Categories[0].Name);
         Assert.AreEqual("Cat 2", _viewModel.Categories[1].Name);
+    }
+
+    [TestMethod]
+    public async Task DeleteCategoryCommand_Success_RemovesFromCollectionAndRepository()
+    {
+        // Arrange
+        var category = new Categoria { Id = Guid.NewGuid(), Name = "To Delete", BudgetLimit = 100 };
+        await _repository.AddAsync(category);
+        _viewModel.Categories.Add(category);
+
+        // Act
+        await _viewModel.DeleteCategoryCommand.ExecuteAsync(category);
+
+        // Assert
+        Assert.AreEqual(0, _viewModel.Categories.Count);
+        var repoItems = await _repository.GetAllAsync();
+        Assert.AreEqual(0, repoItems.Count());
+        Assert.IsNull(_viewModel.ErrorMessage);
+    }
+
+    [TestMethod]
+    public async Task DeleteCategoryCommand_RepositoryThrowsException_SetsErrorMessageAndDoesNotRemoveFromCollection()
+    {
+        // Arrange
+        var category = new Categoria { Id = Guid.NewGuid(), Name = "Locked Category", BudgetLimit = 100 };
+        var faultyRepo = new FaultyCategoryRepository();
+        var vm = new CategoriesViewModel(faultyRepo);
+        vm.Categories.Add(category);
+
+        // Act
+        await vm.DeleteCategoryCommand.ExecuteAsync(category);
+
+        // Assert
+        Assert.AreEqual(1, vm.Categories.Count);
+        Assert.AreEqual(category, vm.Categories[0]);
+        Assert.IsNotNull(vm.ErrorMessage);
+        Assert.AreEqual("Não é possível excluir a categoria pois ela está associada a transações existentes.", vm.ErrorMessage);
+    }
+
+    private class FaultyCategoryRepository : ICategoryRepository
+    {
+        public Task<IEnumerable<Categoria>> GetAllAsync() => throw new NotImplementedException();
+        public Task<Categoria?> GetByIdAsync(Guid id) => throw new NotImplementedException();
+        public Task AddAsync(Categoria category) => throw new NotImplementedException();
+        public Task UpdateAsync(Categoria category) => throw new NotImplementedException();
+        public Task DeleteAsync(Guid id) => throw new InvalidOperationException("Foreign key constraint violation simulated.");
     }
 }

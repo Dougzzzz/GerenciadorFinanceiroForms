@@ -47,7 +47,22 @@ public partial class ParcelamentosViewModel : ObservableObject
     private ParcelamentoViewModel? _selectedParcelamento;
 
     [ObservableProperty]
+    private ObservableCollection<PagamentoParcelamento> _selectedParcelamentoPagamentos = new();
+
+    [ObservableProperty]
     private bool _filtroSomenteEmAberto;
+
+    partial void OnSelectedParcelamentoChanged(ParcelamentoViewModel? value)
+    {
+        SelectedParcelamentoPagamentos.Clear();
+        if (value != null)
+        {
+            foreach (var pag in value.Model.Pagamentos)
+            {
+                SelectedParcelamentoPagamentos.Add(pag);
+            }
+        }
+    }
 
     [ObservableProperty]
     private string? _errorMessage;
@@ -196,6 +211,7 @@ public partial class ParcelamentosViewModel : ObservableObject
         {
             await _pagamentoRepository.AddAsync(pg);
             SelectedParcelamento.Model.Pagamentos.Add(pg);
+            SelectedParcelamentoPagamentos.Add(pg);
             SelectedParcelamento.NotifyCalculatedPropertiesChanged();
 
             // Re-apply filter if status changed and only in-progress is checked
@@ -222,6 +238,7 @@ public partial class ParcelamentosViewModel : ObservableObject
         {
             await _pagamentoRepository.DeleteAsync(pg.Id);
             SelectedParcelamento.Model.Pagamentos.Remove(pg);
+            SelectedParcelamentoPagamentos.Remove(pg);
             SelectedParcelamento.NotifyCalculatedPropertiesChanged();
             
             ApplyFilter();

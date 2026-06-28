@@ -180,10 +180,38 @@ public class ParcelamentosViewModelTests
         Assert.AreEqual(25.0, pVm.PercentualQuitado);
         Assert.AreEqual(1, p.Pagamentos.Count);
         Assert.AreEqual("Primeira parcela", p.Pagamentos.First().Nota);
+        
+        // Observable collection check
+        Assert.AreEqual(1, _viewModel.SelectedParcelamentoPagamentos.Count);
+        Assert.AreEqual(1500m, _viewModel.SelectedParcelamentoPagamentos[0].ValorPago);
 
         // Form cleared
         Assert.IsNull(_viewModel.NewValorPago);
         Assert.AreEqual(string.Empty, _viewModel.NewPagamentoNota);
+    }
+
+    [TestMethod]
+    public void SelectedParcelamentoChange_SynchronizesSelectedParcelamentoPagamentos()
+    {
+        // Arrange
+        var p = new Parcelamento { Id = Guid.NewGuid(), Descricao = "Notebook", ValorTotal = 6000m };
+        p.Pagamentos.Add(new PagamentoParcelamento { ValorPago = 500m });
+        p.Pagamentos.Add(new PagamentoParcelamento { ValorPago = 1000m });
+        var pVm = new ParcelamentoViewModel(p);
+
+        // Act
+        _viewModel.SelectedParcelamento = pVm;
+
+        // Assert
+        Assert.AreEqual(2, _viewModel.SelectedParcelamentoPagamentos.Count);
+        Assert.AreEqual(500m, _viewModel.SelectedParcelamentoPagamentos[0].ValorPago);
+        Assert.AreEqual(1000m, _viewModel.SelectedParcelamentoPagamentos[1].ValorPago);
+
+        // Act 2: Deselect
+        _viewModel.SelectedParcelamento = null;
+
+        // Assert 2
+        Assert.AreEqual(0, _viewModel.SelectedParcelamentoPagamentos.Count);
     }
 
     [TestMethod]

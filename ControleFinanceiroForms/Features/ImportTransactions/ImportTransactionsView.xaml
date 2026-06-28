@@ -16,14 +16,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Importar Transações" 
-                   FontSize="36" FontWeight="Bold" Foreground="#101114" 
-                   Margin="0,0,0,8" />
-        
-        <TextBlock Text="Selecione um arquivo CSV com as suas transações. Transações já importadas serão ignoradas." 
-                   FontSize="16" Foreground="#686b82" 
-                   TextWrapping="Wrap"
-                   Margin="0,0,0,24" />
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Importar Transações" 
+                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       Margin="0,0,0,4" />
+            <TextBlock Text="Selecione um arquivo CSV com as suas transações. Transações já importadas serão ignoradas." 
+                       FontSize="16" Foreground="#686b82" 
+                       TextWrapping="Wrap" />
+        </StackPanel>
 
         <Grid Grid.Row="2" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>

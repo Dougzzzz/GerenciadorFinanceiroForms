@@ -15,13 +15,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Categorias e Metas" 
-                   FontSize="36" FontWeight="Bold" Foreground="#101114" 
-                   Margin="0,0,0,8" />
-        
-        <TextBlock Text="Gerencie suas categorias de gastos e defina limites mensais." 
-                   FontSize="16" Foreground="#686b82" 
-                   Margin="0,0,0,24" />
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Categorias e Metas" 
+                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       Margin="0,0,0,4" />
+            <TextBlock Text="Gerencie suas categorias de gastos e defina limites mensais." 
+                       FontSize="16" Foreground="#686b82" />
+        </StackPanel>
 
         <Grid Grid.Row="1" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>

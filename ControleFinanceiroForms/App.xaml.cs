@@ -1,10 +1,14 @@
 using System.IO;
 using System.Windows;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Extensions.Logging;
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
@@ -24,11 +28,28 @@ public partial class App : Application
 
     public App()
     {
+        // ── Logging folder ─────────────────────────────────────────────
+        var logsFolder = Path.Combine(AppContext.BaseDirectory, "logs");
+        Directory.CreateDirectory(logsFolder);
+        var logFilePath = Path.Combine(logsFolder, "controle-.log");
+
+        // ── Serilog file logger ────────────────────────────────────────
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(
+                logFilePath,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 30,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureLogging((context, logging) =>
             {
                 logging.ClearProviders();
                 logging.AddConsole();
+                // Add Serilog file sink via the MEL bridge
+                logging.AddSerilog(Log.Logger, dispose: false);
 
                 if (context.HostingEnvironment.IsDevelopment())
                 {
@@ -85,6 +106,19 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // ── Global exception handlers ─────────────────────────────────
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            Log.Fatal(args.ExceptionObject as Exception, "Unhandled exception (AppDomain) — app will terminate");
+            Log.CloseAndFlush();
+        };
+
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Log.Error(args.Exception, "Unobserved task exception");
+            args.SetObserved();
+        };
+
         try
         {
             await _host.StartAsync();
@@ -120,6 +154,7 @@ public partial class App : Application
         finally
         {
             _host.Dispose();
+            Log.CloseAndFlush();
             base.OnExit(e);
         }
     }

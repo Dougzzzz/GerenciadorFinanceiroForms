@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Diagnostics;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
@@ -71,5 +73,16 @@ public partial class MainWindow : Window
                     break;
             }
         }
+    }
+
+    private void OpenLogsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var logsPath = Path.Combine(AppContext.BaseDirectory, "logs");
+        Directory.CreateDirectory(logsPath); // ensure it exists
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = logsPath,
+            UseShellExecute = true
+        });
     }
 }

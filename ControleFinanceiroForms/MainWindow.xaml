@@ -12,19 +12,36 @@
         Title="Controle Financeiro" Height="700" Width="1024"
         Background="#f8f8fa">
     <Grid>
-        <TabControl SelectionChanged="TabControl_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0" SelectionChanged="TabControl_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="10">
             <TabItem Header="Dashboard" FontSize="16">
                 <dashboard:DashboardView x:Name="DashboardViewControl" />
             </TabItem>
             <TabItem Header="Categorias" FontSize="16">
                 <categories:CategoriesView x:Name="CategoriesViewControl" />
             </TabItem>
-            <TabItem Header="Importar Transações" FontSize="16">
+            <TabItem Header="Importar Transa&#231;&#245;es" FontSize="16">
                 <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />
             </TabItem>
             <TabItem Header="Meus Investimentos" FontSize="16">
                 <inv:InvestmentsView x:Name="InvestmentsViewControl" />
             </TabItem>
         </TabControl>
+
+        <!-- Footer com botao de acesso rapido aos logs -->
+        <Border Grid.Row="1" Background="#f0f0f5" BorderBrush="#dedee5" BorderThickness="0,1,0,0" Padding="12,6">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="OpenLogsButton"
+                        Content="&#128194; Abrir pasta de logs"
+                        Click="OpenLogsButton_Click"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="#686b82" FontSize="12" Cursor="Hand"
+                        Padding="8,4"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

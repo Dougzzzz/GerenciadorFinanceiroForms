@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ControleFinanceiroForms.Features.Categories;
 
@@ -105,7 +106,19 @@ public partial class CategoriesViewModel : ObservableObject
             ErrorMessage = "O limite de orçamento não pode ser negativo.";
             return;
         }
-
-        await _repository.UpdateAsync(category);
+        try
+        {
+            await _repository.UpdateAsync(category);
+        }
+        catch (DbUpdateException)
+        {
+            ErrorMessage = "Ocorreu um erro ao atualizar a categoria.";
+            await LoadCategoriesAsync();
+        }
+        catch (InvalidOperationException)
+        {
+            ErrorMessage = "Ocorreu um erro ao atualizar a categoria.";
+            await LoadCategoriesAsync();
+        }
     }
 }

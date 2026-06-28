@@ -75,7 +75,15 @@ public partial class CategoriesViewModel : ObservableObject
     {
         if (category == null) return;
         
-        await _repository.DeleteAsync(category.Id);
-        Categories.Remove(category);
+        ErrorMessage = null;
+        try
+        {
+            await _repository.DeleteAsync(category.Id);
+            Categories.Remove(category);
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Não é possível excluir a categoria pois ela está associada a transações existentes.";
+        }
     }
 }

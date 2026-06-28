@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ControleFinanceiroForms.Features.Investments"
+             xmlns:entities="clr-namespace:ControleFinanceiroForms.Data.Entities"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="#ffffff">
@@ -25,24 +26,53 @@
         
         <Grid Grid.Row="1" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
-                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="180" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             
-            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+            <StackPanel Grid.Column="0" Margin="0,0,12,0">
                 <TextBlock Text="Valor Total (R$)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
                 <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}" 
-                         Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Margin="0,0,16,0">
+            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="Operação" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
+                <ComboBox SelectedItem="{Binding NewTipoOperacao}"
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1">
+                    <ComboBox.ItemsSource>
+                        <x:Array Type="{x:Type entities:OperacaoInvestimento}">
+                            <entities:OperacaoInvestimento>SnapshotTotal</entities:OperacaoInvestimento>
+                            <entities:OperacaoInvestimento>Aporte</entities:OperacaoInvestimento>
+                            <entities:OperacaoInvestimento>Retirada</entities:OperacaoInvestimento>
+                        </x:Array>
+                    </ComboBox.ItemsSource>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="Conta" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding NewConta, UpdateSourceTrigger=PropertyChanged}" 
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Margin="0,0,12,0">
+                <TextBlock Text="Tipo" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding NewTipoInvestimento, UpdateSourceTrigger=PropertyChanged}" 
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="4" Margin="0,0,12,0">
                 <TextBlock Text="Nota (Opcional)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
                 <TextBox Text="{Binding NewNote, UpdateSourceTrigger=PropertyChanged}" 
-                         Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
             </StackPanel>
             
-            <Button Grid.Column="2" Content="Registrar" VerticalAlignment="Bottom"
+            <Button Grid.Column="5" Content="Registrar" VerticalAlignment="Bottom"
                     Command="{Binding AddInvestmentCommand}"
                     Background="#7132f5" Foreground="#ffffff" 
                     FontSize="16" FontWeight="SemiBold" 
@@ -62,10 +92,13 @@
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Data do Registro" Binding="{Binding RecordedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="150" IsReadOnly="True" />
-                <DataGridTextColumn Header="Valor Total" Binding="{Binding TotalValue, StringFormat=C}" Width="150" IsReadOnly="True" />
+                <DataGridTextColumn Header="Data do Registro" Binding="{Binding RecordedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130" IsReadOnly="True" />
+                <DataGridTextColumn Header="Valor" Binding="{Binding TotalValue, StringFormat=C}" Width="110" IsReadOnly="True" />
+                <DataGridTextColumn Header="Operação" Binding="{Binding TipoOperacao}" Width="110" IsReadOnly="True" />
+                <DataGridTextColumn Header="Conta" Binding="{Binding Conta}" Width="130" IsReadOnly="True" />
+                <DataGridTextColumn Header="Tipo" Binding="{Binding TipoInvestimento}" Width="130" IsReadOnly="True" />
                 <DataGridTextColumn Header="Nota" Binding="{Binding Note}" Width="*" IsReadOnly="True" />
-                <DataGridTemplateColumn Header="Ações" Width="100">
+                <DataGridTemplateColumn Header="Ações" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="Excluir" Background="Transparent" Foreground="#7132f5" BorderThickness="0" Cursor="Hand"

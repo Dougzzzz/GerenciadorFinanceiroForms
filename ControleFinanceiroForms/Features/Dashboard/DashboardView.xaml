@@ -140,7 +140,7 @@
 
                                     <!-- Barra de Progresso da Categoria -->
                                     <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
-                                                 Value="{Binding ProgressPercentage}" 
+                                                 Value="{Binding ProgressPercentage, Mode=OneWay}" 
                                                  Foreground="{Binding StatusColor}"
                                                  Style="{StaticResource ModernProgressBarStyle}"/>
                                 </Grid>

@@ -198,12 +198,29 @@ public class CategoriesViewModelTests
         Assert.AreEqual("O limite de orçamento não pode ser negativo.", _viewModel.ErrorMessage);
     }
 
+    [TestMethod]
+    public async Task UpdateCategoryCommand_RepositoryThrowsException_SetsErrorMessage()
+    {
+        // Arrange
+        var category = new Categoria { Id = Guid.NewGuid(), Name = "Category to Update", BudgetLimit = 100 };
+        var faultyRepo = new FaultyCategoryRepository();
+        var vm = new CategoriesViewModel(faultyRepo);
+        vm.Categories.Add(category);
+
+        // Act
+        await vm.UpdateCategoryCommand.ExecuteAsync(category);
+
+        // Assert
+        Assert.IsNotNull(vm.ErrorMessage);
+        Assert.AreEqual("Ocorreu um erro ao atualizar a categoria.", vm.ErrorMessage);
+    }
+
     private class FaultyCategoryRepository : ICategoryRepository
     {
-        public Task<IEnumerable<Categoria>> GetAllAsync() => throw new NotImplementedException();
+        public Task<IEnumerable<Categoria>> GetAllAsync() => Task.FromResult(Enumerable.Empty<Categoria>());
         public Task<Categoria?> GetByIdAsync(Guid id) => throw new NotImplementedException();
         public Task AddAsync(Categoria category) => throw new NotImplementedException();
-        public Task UpdateAsync(Categoria category) => throw new NotImplementedException();
+        public Task UpdateAsync(Categoria category) => throw new InvalidOperationException("Update failed simulated.");
         public Task DeleteAsync(Guid id) => throw new InvalidOperationException("Foreign key constraint violation simulated.");
     }
 }

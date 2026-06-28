@@ -11,6 +11,7 @@ public partial class ImportTransactionsViewModel : ObservableObject
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly ICsvParserService _parserService;
+    private readonly IPdfParserService _pdfParserService;
     private readonly IFilePickerService _filePickerService;
     private readonly ICategoryRepository _categoryRepository;
 
@@ -29,11 +30,13 @@ public partial class ImportTransactionsViewModel : ObservableObject
     public ImportTransactionsViewModel(
         ITransactionRepository transactionRepository,
         ICsvParserService parserService,
+        IPdfParserService pdfParserService,
         IFilePickerService filePickerService,
         ICategoryRepository categoryRepository)
     {
         _transactionRepository = transactionRepository;
         _parserService = parserService;
+        _pdfParserService = pdfParserService;
         _filePickerService = filePickerService;
         _categoryRepository = categoryRepository;
     }
@@ -52,7 +55,7 @@ public partial class ImportTransactionsViewModel : ObservableObject
     [RelayCommand]
     private async Task ImportAsync()
     {
-        using var stream = _filePickerService.PickCsvFileStream();
+        using var stream = _filePickerService.PickFileStream(out string fileExtension);
         if (stream == null)
             return;
 
@@ -61,7 +64,16 @@ public partial class ImportTransactionsViewModel : ObservableObject
 
         try
         {
-            var parsedTransactions = await _parserService.ParseCsvAsync(stream);
+            IEnumerable<Transacao> parsedTransactions;
+            if (fileExtension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                parsedTransactions = await _pdfParserService.ParsePdfAsync(stream);
+            }
+            else
+            {
+                parsedTransactions = await _parserService.ParseCsvAsync(stream);
+            }
+
             var parsedTransactionsList = parsedTransactions.ToList();
             var incomingHashes = parsedTransactionsList.Select(t => t.ChaveExclusiva).Distinct().ToList();
             

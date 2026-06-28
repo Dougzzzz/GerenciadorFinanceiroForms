@@ -67,6 +67,7 @@ public partial class App : Application
                 services.AddScoped<IInvestmentRepository, InvestmentRepository>();
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
                 services.AddScoped<ICsvParserService, CsvParserService>();
+                services.AddScoped<IPdfParserService, PdfParserService>();
                 services.AddScoped<IFilePickerService, WindowsFilePickerService>();
 
                 // ── ViewModels ─────────────────────────────────────────────

@@ -8,9 +8,21 @@ namespace ControleFinanceiroForms.Tests;
 public class FakeFilePickerService : IFilePickerService
 {
     public Stream? StreamToReturn { get; set; }
+    public string ExtensionToReturn { get; set; } = ".csv";
     
     public Stream? PickCsvFileStream()
     {
+        return StreamToReturn;
+    }
+
+    public Stream? PickPdfFileStream()
+    {
+        return StreamToReturn;
+    }
+
+    public Stream? PickFileStream(out string fileExtension)
+    {
+        fileExtension = ExtensionToReturn;
         return StreamToReturn;
     }
 }
@@ -25,11 +37,22 @@ public class FakeCsvParserService : ICsvParserService
     }
 }
 
+public class FakePdfParserService : IPdfParserService
+{
+    public IEnumerable<Transacao> TransactionsToReturn { get; set; } = new List<Transacao>();
+
+    public Task<IEnumerable<Transacao>> ParsePdfAsync(Stream stream)
+    {
+        return Task.FromResult(TransactionsToReturn);
+    }
+}
+
 [TestClass]
 public class ImportTransactionsViewModelTests
 {
     private FakeTransactionRepository _repository = null!;
     private FakeCsvParserService _parserService = null!;
+    private FakePdfParserService _pdfParserService = null!;
     private FakeFilePickerService _filePickerService = null!;
     private FakeCategoryRepository _categoryRepository = null!;
     private ImportTransactionsViewModel _viewModel = null!;
@@ -39,12 +62,14 @@ public class ImportTransactionsViewModelTests
     {
         _repository = new FakeTransactionRepository();
         _parserService = new FakeCsvParserService();
+        _pdfParserService = new FakePdfParserService();
         _filePickerService = new FakeFilePickerService();
         _categoryRepository = new FakeCategoryRepository();
         
         _viewModel = new ImportTransactionsViewModel(
             _repository, 
             _parserService, 
+            _pdfParserService,
             _filePickerService,
             _categoryRepository);
     }
@@ -83,5 +108,24 @@ public class ImportTransactionsViewModelTests
 
         // Assert
         Assert.AreEqual(0, _repository.Count);
+    }
+
+    [TestMethod]
+    public async Task ImportCommand_ValidPdfFile_ImportsTransactionsUsingPdfParser()
+    {
+        // Arrange
+        _filePickerService.ExtensionToReturn = ".pdf";
+        _filePickerService.StreamToReturn = new MemoryStream();
+        
+        var pdfTx = Transacao.Create(new DateTime(2026, 5, 20), "Pdf Tx", 300);
+        _pdfParserService.TransactionsToReturn = new List<Transacao> { pdfTx };
+
+        // Act
+        await _viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.AreEqual(1, _repository.Count);
+        var allTx = await _repository.GetAllAsync();
+        Assert.AreEqual("Pdf Tx", allTx.First().Description);
     }
 }

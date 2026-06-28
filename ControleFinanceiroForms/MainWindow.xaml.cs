@@ -7,6 +7,7 @@ using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
 using ControleFinanceiroForms.Features.Dashboard;
+using ControleFinanceiroForms.Features.Parcelamentos;
 
 namespace ControleFinanceiroForms;
 
@@ -19,13 +20,15 @@ public partial class MainWindow : Window
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly CategoriesViewModel _categoriesViewModel;
     private readonly ImportTransactionsViewModel _importViewModel;
+    private readonly ParcelamentosViewModel _parcelamentosViewModel;
     private readonly InvestmentsViewModel _investmentsViewModel;
 
     public MainWindow(
         InvestmentsViewModel investmentsViewModel, 
         ImportTransactionsViewModel importViewModel, 
         CategoriesViewModel categoriesViewModel,
-        DashboardViewModel dashboardViewModel)
+        DashboardViewModel dashboardViewModel,
+        ParcelamentosViewModel parcelamentosViewModel)
     {
         InitializeComponent();
 
@@ -33,11 +36,13 @@ public partial class MainWindow : Window
         _importViewModel = importViewModel;
         _categoriesViewModel = categoriesViewModel;
         _dashboardViewModel = dashboardViewModel;
+        _parcelamentosViewModel = parcelamentosViewModel;
 
         InvestmentsViewControl.DataContext = investmentsViewModel;
         ImportTransactionsViewControl.DataContext = importViewModel;
         CategoriesViewControl.DataContext = categoriesViewModel;
         DashboardViewControl.DataContext = dashboardViewModel;
+        ParcelamentosViewControl.DataContext = parcelamentosViewModel;
 
         // Load default dashboard on startup
         Loaded += async (s, e) =>
@@ -68,6 +73,10 @@ public partial class MainWindow : Window
                         await _importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
                     break;
                 case 3:
+                    if (_parcelamentosViewModel.LoadParcelamentosCommand.CanExecute(null))
+                        await _parcelamentosViewModel.LoadParcelamentosCommand.ExecuteAsync(null);
+                    break;
+                case 4:
                     if (_investmentsViewModel.LoadInvestmentsCommand.CanExecute(null))
                         await _investmentsViewModel.LoadInvestmentsCommand.ExecuteAsync(null);
                     break;

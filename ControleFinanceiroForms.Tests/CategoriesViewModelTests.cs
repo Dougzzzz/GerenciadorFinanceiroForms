@@ -217,7 +217,7 @@ public class CategoriesViewModelTests
 
     private class FaultyCategoryRepository : ICategoryRepository
     {
-        public Task<IEnumerable<Categoria>> GetAllAsync() => throw new NotImplementedException();
+        public Task<IEnumerable<Categoria>> GetAllAsync() => Task.FromResult(Enumerable.Empty<Categoria>());
         public Task<Categoria?> GetByIdAsync(Guid id) => throw new NotImplementedException();
         public Task AddAsync(Categoria category) => throw new NotImplementedException();
         public Task UpdateAsync(Categoria category) => throw new InvalidOperationException("Update failed simulated.");

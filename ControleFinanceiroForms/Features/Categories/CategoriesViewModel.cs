@@ -105,7 +105,13 @@ public partial class CategoriesViewModel : ObservableObject
             ErrorMessage = "O limite de orçamento não pode ser negativo.";
             return;
         }
-
-        await _repository.UpdateAsync(category);
+        try
+        {
+            await _repository.UpdateAsync(category);
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Ocorreu um erro ao atualizar a categoria.";
+        }
     }
 }

@@ -58,12 +58,13 @@
         <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="#e02020" FontSize="14" Margin="0,70,0,0" VerticalAlignment="Bottom" />
 
         <DataGrid Grid.Row="2" ItemsSource="{Binding Categories}" AutoGenerateColumns="False" 
-                  CanUserAddRows="False" Background="#ffffff" BorderBrush="#dedee5" 
+                  CanUserAddRows="False" CanUserDeleteRows="False" Background="#ffffff" BorderBrush="#dedee5" 
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
-                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5">
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5"
+                  RowEditEnding="DataGrid_RowEditEnding">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*" IsReadOnly="True" />
-                <DataGridTextColumn Header="Limite Orçamentário" Binding="{Binding BudgetLimit, StringFormat=C}" Width="200" IsReadOnly="True" />
+                <DataGridTextColumn Header="Nome" Binding="{Binding Name, UpdateSourceTrigger=LostFocus}" Width="*" />
+                <DataGridTextColumn Header="Limite Orçamentário" Binding="{Binding BudgetLimit, UpdateSourceTrigger=LostFocus}" Width="200" />
                 <DataGridTemplateColumn Header="Ações" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

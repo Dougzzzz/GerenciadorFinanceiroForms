@@ -86,4 +86,26 @@ public partial class CategoriesViewModel : ObservableObject
             ErrorMessage = "Não é possível excluir a categoria pois ela está associada a transações existentes.";
         }
     }
+
+    [RelayCommand]
+    private async Task UpdateCategoryAsync(Categoria? category)
+    {
+        if (category == null) return;
+
+        ErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(category.Name))
+        {
+            ErrorMessage = "O nome da categoria não pode estar vazio.";
+            return;
+        }
+
+        if (category.BudgetLimit.HasValue && category.BudgetLimit.Value < 0)
+        {
+            ErrorMessage = "O limite de orçamento não pode ser negativo.";
+            return;
+        }
+
+        await _repository.UpdateAsync(category);
+    }
 }

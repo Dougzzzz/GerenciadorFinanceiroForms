@@ -27,6 +27,8 @@ public class AppDbContext : DbContext
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<MetaGasto> MetasGasto => Set<MetaGasto>();
     public DbSet<Investimento> Investimentos => Set<Investimento>();
+    public DbSet<Parcelamento> Parcelamentos => Set<Parcelamento>();
+    public DbSet<PagamentoParcelamento> PagamentosParcelamento => Set<PagamentoParcelamento>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,6 +90,30 @@ public class AppDbContext : DbContext
             entity.Property(i => i.TipoOperacao)
                   .HasConversion<int>()
                   .HasDefaultValue(OperacaoInvestimento.SnapshotTotal);
+        });
+
+        // ── Parcelamento ───────────────────────────────────────────
+        modelBuilder.Entity<Parcelamento>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Descricao).IsRequired().HasMaxLength(500);
+            entity.Property(p => p.ValorTotal).IsRequired().HasColumnType("TEXT");
+            entity.Property(p => p.DataInicio).IsRequired();
+            entity.Property(p => p.CriadoEm).IsRequired();
+
+            entity.HasMany(p => p.Pagamentos)
+                  .WithOne()
+                  .HasForeignKey(pp => pp.ParcelamentoId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── PagamentoParcelamento ──────────────────────────────────
+        modelBuilder.Entity<PagamentoParcelamento>(entity =>
+        {
+            entity.HasKey(pp => pp.Id);
+            entity.Property(pp => pp.ValorPago).IsRequired().HasColumnType("TEXT");
+            entity.Property(pp => pp.DataPagamento).IsRequired();
+            entity.Property(pp => pp.Nota).HasMaxLength(500);
         });
     }
 }

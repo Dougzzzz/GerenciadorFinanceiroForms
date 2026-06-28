@@ -314,4 +314,114 @@ public sealed class AppDbContextIntegrationTests
             async () => await repo.AddRangeAsync(duplicateBatch),
             "FakeTransactionRepository.AddRangeAsync must detect and reject duplicates.");
     }
+
+    [TestMethod]
+    public async Task SaveAndRetrieve_Parcelamento_ReturnsCorrectEntity()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Notebook Gamer",
+            ValorTotal = 6500.00m,
+            NumeroParcelas = 10,
+            DataInicio = new DateTime(2026, 6, 1),
+            CriadoEm = DateTime.Now
+        };
+
+        // Act
+        await context.Parcelamentos.AddAsync(parcelamento);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.Parcelamentos.FindAsync(parcelamento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(parcelamento.Descricao, retrieved.Descricao);
+        Assert.AreEqual(parcelamento.ValorTotal, retrieved.ValorTotal);
+        Assert.AreEqual(parcelamento.NumeroParcelas, retrieved.NumeroParcelas);
+        Assert.AreEqual(parcelamento.DataInicio, retrieved.DataInicio);
+    }
+
+    [TestMethod]
+    public async Task SaveAndRetrieve_PagamentoParcelamento_ReturnsCorrectEntity()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Dívida Teste",
+            ValorTotal = 1000.00m,
+            DataInicio = DateTime.Today
+        };
+        var pagamento = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 100.00m,
+            DataPagamento = DateTime.Today,
+            Nota = "Primeira parcela"
+        };
+
+        // Act
+        await context.Parcelamentos.AddAsync(parcelamento);
+        await context.PagamentosParcelamento.AddAsync(pagamento);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.PagamentosParcelamento.FindAsync(pagamento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(pagamento.ParcelamentoId, retrieved.ParcelamentoId);
+        Assert.AreEqual(pagamento.ValorPago, retrieved.ValorPago);
+        Assert.AreEqual(pagamento.DataPagamento, retrieved.DataPagamento);
+        Assert.AreEqual(pagamento.Nota, retrieved.Nota);
+    }
+
+    [TestMethod]
+    public async Task Delete_Parcelamento_CascadeDeletesPagamentos()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var repoParcelamento = new ParcelamentoRepository(context);
+        var repoPagamento = new PagamentoParcelamentoRepository(context);
+
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Dívida Cascade",
+            ValorTotal = 1000.00m,
+            DataInicio = DateTime.Today
+        };
+        await repoParcelamento.AddAsync(parcelamento);
+
+        var pag1 = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 100.00m,
+            DataPagamento = DateTime.Today
+        };
+        var pag2 = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 200.00m,
+            DataPagamento = DateTime.Today
+        };
+        await repoPagamento.AddAsync(pag1);
+        await repoPagamento.AddAsync(pag2);
+
+        // Act
+        await repoParcelamento.DeleteAsync(parcelamento.Id);
+
+        var retrievedParcelamento = await repoParcelamento.GetByIdAsync(parcelamento.Id);
+        var retrievedPagamentos = await repoPagamento.GetByParcelamentoIdAsync(parcelamento.Id);
+
+        // Assert
+        Assert.IsNull(retrievedParcelamento);
+        Assert.AreEqual(0, retrievedPagamentos.Count(), "Pagamentos should be cascade deleted by EF.");
+    }
 }

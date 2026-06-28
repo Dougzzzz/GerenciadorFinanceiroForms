@@ -88,6 +88,8 @@ public partial class App : Application
                 services.AddScoped<ITransactionRepository, TransactionRepository>();
                 services.AddScoped<IInvestmentRepository, InvestmentRepository>();
                 services.AddScoped<ICategoryRepository, CategoryRepository>();
+                services.AddScoped<IParcelamentoRepository, ParcelamentoRepository>();
+                services.AddScoped<IPagamentoParcelamentoRepository, PagamentoParcelamentoRepository>();
                 services.AddScoped<ICsvParserService, CsvParserService>();
                 services.AddScoped<IPdfParserService, PdfParserService>();
                 services.AddScoped<IFilePickerService, WindowsFilePickerService>();

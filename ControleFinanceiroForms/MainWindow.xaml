@@ -7,11 +7,15 @@
         xmlns:inv="clr-namespace:ControleFinanceiroForms.Features.Investments"
         xmlns:import="clr-namespace:ControleFinanceiroForms.Features.ImportTransactions"
         xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
+        xmlns:dashboard="clr-namespace:ControleFinanceiroForms.Features.Dashboard"
         mc:Ignorable="d"
         Title="Controle Financeiro" Height="700" Width="1024"
         Background="#f8f8fa">
     <Grid>
-        <TabControl Background="Transparent" BorderThickness="0" Margin="10">
+        <TabControl SelectionChanged="TabControl_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="10">
+            <TabItem Header="Dashboard" FontSize="16">
+                <dashboard:DashboardView x:Name="DashboardViewControl" />
+            </TabItem>
             <TabItem Header="Categorias" FontSize="16">
                 <categories:CategoriesView x:Name="CategoriesViewControl" />
             </TabItem>

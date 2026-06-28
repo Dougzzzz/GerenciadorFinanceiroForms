@@ -1,0 +1,154 @@
+<UserControl x:Class="ControleFinanceiroForms.Features.Dashboard.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ControleFinanceiroForms.Features.Dashboard"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#ffffff">
+
+    <UserControl.Resources>
+        <!-- Estilo para os Cards de Resumo -->
+        <Style TargetType="Border" x:Key="CardStyle">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="BorderBrush" Value="#dedee5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+
+        <!-- Conversor Simples de Cor para Status Geral -->
+        <local:StatusColorConverter x:Key="StatusColorConverter"/>
+
+        <!-- Template Customizado e Moderno para ProgressBar (Sem efeitos 3D) -->
+        <Style TargetType="ProgressBar" x:Key="ModernProgressBarStyle">
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Background" Value="#f4f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" CornerRadius="5"/>
+                            <Border Name="PART_Indicator" HorizontalAlignment="Left" Background="{TemplateBinding Foreground}" CornerRadius="5"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título e Subtítulo -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Dashboard" 
+                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       Margin="0,0,0,4"/>
+            <TextBlock Text="Acompanhamento passivo dos seus gastos e metas mensais do mês corrente." 
+                       FontSize="16" Foreground="#686b82"/>
+        </StackPanel>
+
+        <!-- Cards Superiores de Resumo -->
+        <Grid Grid.Row="1" Margin="-8,0,-8,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Card: Total Orçado -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="TOTAL ORÇADO" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding TotalBudget, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="#101114"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Card: Total Realizado -->
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="TOTAL GASTO" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding TotalSpent, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="#101114"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Card: Saldo Restante -->
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="SALDO RESTANTE" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding RemainingBudget, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" 
+                               Foreground="{Binding IsGeneralOverBudget, Converter={StaticResource StatusColorConverter}}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Progresso Orçamentário Geral -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <TextBlock Text="Progresso Orçamentário Geral" FontSize="16" FontWeight="Bold" Foreground="#101114" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding GeneralProgress, StringFormat=\{0:F0\}%}" FontSize="16" FontWeight="Bold" Foreground="#7132f5" HorizontalAlignment="Right"/>
+                </Grid>
+                <ProgressBar Grid.Row="1" Value="{Binding GeneralProgress}" 
+                             Foreground="{Binding IsGeneralOverBudget, Converter={StaticResource StatusColorConverter}}"
+                             Style="{StaticResource ModernProgressBarStyle}"/>
+            </Grid>
+        </Border>
+
+        <!-- Detalhes por Categoria -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="Limites por Categoria" FontSize="20" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding DashboardItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#dedee5" BorderThickness="0,0,0,1" Padding="0,16" Margin="0,0,16,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Nome da Categoria -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="16" FontWeight="SemiBold" Foreground="#101114" Margin="0,0,0,6"/>
+
+                                    <!-- Progresso do Gasto -->
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FormattedProgress}" FontSize="14" Foreground="#686b82" VerticalAlignment="Center" Margin="0,0,0,6"/>
+
+                                    <!-- Barra de Progresso da Categoria -->
+                                    <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                                 Value="{Binding ProgressPercentage}" 
+                                                 Foreground="{Binding StatusColor}"
+                                                 Style="{StaticResource ModernProgressBarStyle}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -9,6 +9,7 @@ using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
+using ControleFinanceiroForms.Features.Dashboard;
 
 namespace ControleFinanceiroForms;
 
@@ -74,6 +75,7 @@ public partial class App : Application
                 services.AddTransient<InvestmentsViewModel>();
                 services.AddTransient<ImportTransactionsViewModel>();
                 services.AddTransient<CategoriesViewModel>();
+                services.AddTransient<DashboardViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
                 services.AddTransient<MainWindow>();

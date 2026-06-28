@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using System.Windows.Controls;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
+using ControleFinanceiroForms.Features.Dashboard;
 
 namespace ControleFinanceiroForms;
 
@@ -12,29 +14,62 @@ namespace ControleFinanceiroForms;
 [ExcludeFromCodeCoverage]
 public partial class MainWindow : Window
 {
-    public MainWindow(InvestmentsViewModel investmentsViewModel, ImportTransactionsViewModel importViewModel, CategoriesViewModel categoriesViewModel)
+    private readonly DashboardViewModel _dashboardViewModel;
+    private readonly CategoriesViewModel _categoriesViewModel;
+    private readonly ImportTransactionsViewModel _importViewModel;
+    private readonly InvestmentsViewModel _investmentsViewModel;
+
+    public MainWindow(
+        InvestmentsViewModel investmentsViewModel, 
+        ImportTransactionsViewModel importViewModel, 
+        CategoriesViewModel categoriesViewModel,
+        DashboardViewModel dashboardViewModel)
     {
         InitializeComponent();
-        
-        // Load data on startup
-        Loaded += async (s, e) =>
-        {
-            if (investmentsViewModel.LoadInvestmentsCommand.CanExecute(null))
-            {
-                await investmentsViewModel.LoadInvestmentsCommand.ExecuteAsync(null);
-            }
-            if (categoriesViewModel.LoadCategoriesCommand.CanExecute(null))
-            {
-                await categoriesViewModel.LoadCategoriesCommand.ExecuteAsync(null);
-            }
-            if (importViewModel.LoadCategoriesCommand.CanExecute(null))
-            {
-                await importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
-            }
-        };
+
+        _investmentsViewModel = investmentsViewModel;
+        _importViewModel = importViewModel;
+        _categoriesViewModel = categoriesViewModel;
+        _dashboardViewModel = dashboardViewModel;
 
         InvestmentsViewControl.DataContext = investmentsViewModel;
         ImportTransactionsViewControl.DataContext = importViewModel;
         CategoriesViewControl.DataContext = categoriesViewModel;
+        DashboardViewControl.DataContext = dashboardViewModel;
+
+        // Load default dashboard on startup
+        Loaded += async (s, e) =>
+        {
+            if (_dashboardViewModel.LoadDashboardCommand.CanExecute(null))
+            {
+                await _dashboardViewModel.LoadDashboardCommand.ExecuteAsync(null);
+            }
+        };
+    }
+
+    private async void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.Source is TabControl tabControl)
+        {
+            switch (tabControl.SelectedIndex)
+            {
+                case 0:
+                    if (_dashboardViewModel.LoadDashboardCommand.CanExecute(null))
+                        await _dashboardViewModel.LoadDashboardCommand.ExecuteAsync(null);
+                    break;
+                case 1:
+                    if (_categoriesViewModel.LoadCategoriesCommand.CanExecute(null))
+                        await _categoriesViewModel.LoadCategoriesCommand.ExecuteAsync(null);
+                    break;
+                case 2:
+                    if (_importViewModel.LoadCategoriesCommand.CanExecute(null))
+                        await _importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
+                    break;
+                case 3:
+                    if (_investmentsViewModel.LoadInvestmentsCommand.CanExecute(null))
+                        await _investmentsViewModel.LoadInvestmentsCommand.ExecuteAsync(null);
+                    break;
+            }
+        }
     }
 }

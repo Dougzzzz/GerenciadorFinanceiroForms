@@ -83,6 +83,11 @@ public class AppDbContext : DbContext
             entity.Property(i => i.RecordedAt).IsRequired();
             entity.Property(i => i.TotalValue).IsRequired().HasColumnType("TEXT");
             entity.Property(i => i.Note).HasMaxLength(500);
+            entity.Property(i => i.Conta).HasMaxLength(200);
+            entity.Property(i => i.TipoInvestimento).HasMaxLength(200);
+            entity.Property(i => i.TipoOperacao)
+                  .HasConversion<int>()
+                  .HasDefaultValue(OperacaoInvestimento.SnapshotTotal);
         });
     }
 }

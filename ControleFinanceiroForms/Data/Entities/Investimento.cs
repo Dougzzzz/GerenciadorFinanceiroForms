@@ -17,4 +17,13 @@ public class Investimento
 
     /// <summary>Optional note (e.g., "After January rebalancing").</summary>
     public string? Note { get; set; }
+
+    /// <summary>Institution or account (e.g., "Nubank", "XP").</summary>
+    public string? Conta { get; set; }
+
+    /// <summary>Asset class (e.g., "Renda Fixa", "Ações").</summary>
+    public string? TipoInvestimento { get; set; }
+
+    /// <summary>Type of investment operation.</summary>
+    public OperacaoInvestimento TipoOperacao { get; set; } = OperacaoInvestimento.SnapshotTotal;
 }

@@ -129,7 +129,10 @@ public sealed class AppDbContextIntegrationTests
             Id = Guid.NewGuid(),
             RecordedAt = DateTime.UtcNow,
             TotalValue = 150_000.00m,
-            Note = "Rebalanceamento janeiro"
+            Note = "Rebalanceamento janeiro",
+            Conta = "XP Investimentos",
+            TipoInvestimento = "Ações",
+            TipoOperacao = OperacaoInvestimento.Aporte
         };
 
         // Act
@@ -142,6 +145,46 @@ public sealed class AppDbContextIntegrationTests
         Assert.IsNotNull(retrieved, "Investimento should be retrievable after save.");
         Assert.AreEqual(investimento.TotalValue, retrieved.TotalValue);
         Assert.AreEqual(investimento.Note, retrieved.Note);
+        Assert.AreEqual(investimento.Conta, retrieved.Conta);
+        Assert.AreEqual(investimento.TipoInvestimento, retrieved.TipoInvestimento);
+        Assert.AreEqual(investimento.TipoOperacao, retrieved.TipoOperacao);
+    }
+
+    [TestMethod]
+    public async Task SaveAndUpdate_Investimento_UpdatesCorrectly()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        var investimento = new Investimento
+        {
+            Id = Guid.NewGuid(),
+            RecordedAt = DateTime.UtcNow,
+            TotalValue = 50_000.00m,
+            Note = "Original Note",
+            Conta = "Nubank",
+            TipoInvestimento = "Renda Fixa",
+            TipoOperacao = OperacaoInvestimento.SnapshotTotal
+        };
+        await repo.AddAsync(investimento);
+
+        // Act
+        investimento.TotalValue = 55_000.00m;
+        investimento.Note = "Updated Note";
+        investimento.Conta = "Inter";
+        investimento.TipoInvestimento = "LCI";
+        investimento.TipoOperacao = OperacaoInvestimento.Aporte;
+        await repo.UpdateAsync(investimento);
+
+        var retrieved = await repo.GetByIdAsync(investimento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(55_000.00m, retrieved.TotalValue);
+        Assert.AreEqual("Updated Note", retrieved.Note);
+        Assert.AreEqual("Inter", retrieved.Conta);
+        Assert.AreEqual("LCI", retrieved.TipoInvestimento);
+        Assert.AreEqual(OperacaoInvestimento.Aporte, retrieved.TipoOperacao);
     }
 
     /// <summary>

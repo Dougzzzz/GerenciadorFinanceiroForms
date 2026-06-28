@@ -19,9 +19,20 @@ public class InvestmentRepository : IInvestmentRepository
             .ToListAsync();
     }
 
+    public async Task<Investimento?> GetByIdAsync(Guid id)
+    {
+        return await _context.Investimentos.FindAsync(id);
+    }
+
     public async Task AddAsync(Investimento investimento)
     {
         await _context.Investimentos.AddAsync(investimento);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Investimento investimento)
+    {
+        _context.Investimentos.Update(investimento);
         await _context.SaveChangesAsync();
     }
 

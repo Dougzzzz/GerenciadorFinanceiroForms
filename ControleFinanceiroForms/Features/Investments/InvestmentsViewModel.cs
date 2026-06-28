@@ -20,6 +20,15 @@ public partial class InvestmentsViewModel : ObservableObject
     private string _newNote = string.Empty;
 
     [ObservableProperty]
+    private string _newConta = string.Empty;
+
+    [ObservableProperty]
+    private string _newTipoInvestimento = string.Empty;
+
+    [ObservableProperty]
+    private OperacaoInvestimento _newTipoOperacao = OperacaoInvestimento.SnapshotTotal;
+
+    [ObservableProperty]
     private string? _errorMessage;
 
     public InvestmentsViewModel(IInvestmentRepository repository)
@@ -60,7 +69,10 @@ public partial class InvestmentsViewModel : ObservableObject
             Id = Guid.NewGuid(),
             RecordedAt = DateTime.Now,
             TotalValue = NewValue.Value,
-            Note = string.IsNullOrWhiteSpace(NewNote) ? null : NewNote.Trim()
+            Note = string.IsNullOrWhiteSpace(NewNote) ? null : NewNote.Trim(),
+            Conta = string.IsNullOrWhiteSpace(NewConta) ? null : NewConta.Trim(),
+            TipoInvestimento = string.IsNullOrWhiteSpace(NewTipoInvestimento) ? null : NewTipoInvestimento.Trim(),
+            TipoOperacao = NewTipoOperacao
         };
 
         await _repository.AddAsync(inv);
@@ -68,6 +80,9 @@ public partial class InvestmentsViewModel : ObservableObject
 
         NewValue = null;
         NewNote = string.Empty;
+        NewConta = string.Empty;
+        NewTipoInvestimento = string.Empty;
+        NewTipoOperacao = OperacaoInvestimento.SnapshotTotal;
     }
 
     [RelayCommand]

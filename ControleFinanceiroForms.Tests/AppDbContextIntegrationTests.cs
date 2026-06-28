@@ -129,7 +129,10 @@ public sealed class AppDbContextIntegrationTests
             Id = Guid.NewGuid(),
             RecordedAt = DateTime.UtcNow,
             TotalValue = 150_000.00m,
-            Note = "Rebalanceamento janeiro"
+            Note = "Rebalanceamento janeiro",
+            Conta = "XP Investimentos",
+            TipoInvestimento = "Ações",
+            TipoOperacao = OperacaoInvestimento.Aporte
         };
 
         // Act
@@ -142,6 +145,46 @@ public sealed class AppDbContextIntegrationTests
         Assert.IsNotNull(retrieved, "Investimento should be retrievable after save.");
         Assert.AreEqual(investimento.TotalValue, retrieved.TotalValue);
         Assert.AreEqual(investimento.Note, retrieved.Note);
+        Assert.AreEqual(investimento.Conta, retrieved.Conta);
+        Assert.AreEqual(investimento.TipoInvestimento, retrieved.TipoInvestimento);
+        Assert.AreEqual(investimento.TipoOperacao, retrieved.TipoOperacao);
+    }
+
+    [TestMethod]
+    public async Task SaveAndUpdate_Investimento_UpdatesCorrectly()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        var investimento = new Investimento
+        {
+            Id = Guid.NewGuid(),
+            RecordedAt = DateTime.UtcNow,
+            TotalValue = 50_000.00m,
+            Note = "Original Note",
+            Conta = "Nubank",
+            TipoInvestimento = "Renda Fixa",
+            TipoOperacao = OperacaoInvestimento.SnapshotTotal
+        };
+        await repo.AddAsync(investimento);
+
+        // Act
+        investimento.TotalValue = 55_000.00m;
+        investimento.Note = "Updated Note";
+        investimento.Conta = "Inter";
+        investimento.TipoInvestimento = "LCI";
+        investimento.TipoOperacao = OperacaoInvestimento.Aporte;
+        await repo.UpdateAsync(investimento);
+
+        var retrieved = await repo.GetByIdAsync(investimento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(55_000.00m, retrieved.TotalValue);
+        Assert.AreEqual("Updated Note", retrieved.Note);
+        Assert.AreEqual("Inter", retrieved.Conta);
+        Assert.AreEqual("LCI", retrieved.TipoInvestimento);
+        Assert.AreEqual(OperacaoInvestimento.Aporte, retrieved.TipoOperacao);
     }
 
     /// <summary>
@@ -270,5 +313,115 @@ public sealed class AppDbContextIntegrationTests
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(
             async () => await repo.AddRangeAsync(duplicateBatch),
             "FakeTransactionRepository.AddRangeAsync must detect and reject duplicates.");
+    }
+
+    [TestMethod]
+    public async Task SaveAndRetrieve_Parcelamento_ReturnsCorrectEntity()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Notebook Gamer",
+            ValorTotal = 6500.00m,
+            NumeroParcelas = 10,
+            DataInicio = new DateTime(2026, 6, 1),
+            CriadoEm = DateTime.Now
+        };
+
+        // Act
+        await context.Parcelamentos.AddAsync(parcelamento);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.Parcelamentos.FindAsync(parcelamento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(parcelamento.Descricao, retrieved.Descricao);
+        Assert.AreEqual(parcelamento.ValorTotal, retrieved.ValorTotal);
+        Assert.AreEqual(parcelamento.NumeroParcelas, retrieved.NumeroParcelas);
+        Assert.AreEqual(parcelamento.DataInicio, retrieved.DataInicio);
+    }
+
+    [TestMethod]
+    public async Task SaveAndRetrieve_PagamentoParcelamento_ReturnsCorrectEntity()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Dívida Teste",
+            ValorTotal = 1000.00m,
+            DataInicio = DateTime.Today
+        };
+        var pagamento = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 100.00m,
+            DataPagamento = DateTime.Today,
+            Nota = "Primeira parcela"
+        };
+
+        // Act
+        await context.Parcelamentos.AddAsync(parcelamento);
+        await context.PagamentosParcelamento.AddAsync(pagamento);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.PagamentosParcelamento.FindAsync(pagamento.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(pagamento.ParcelamentoId, retrieved.ParcelamentoId);
+        Assert.AreEqual(pagamento.ValorPago, retrieved.ValorPago);
+        Assert.AreEqual(pagamento.DataPagamento, retrieved.DataPagamento);
+        Assert.AreEqual(pagamento.Nota, retrieved.Nota);
+    }
+
+    [TestMethod]
+    public async Task Delete_Parcelamento_CascadeDeletesPagamentos()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var repoParcelamento = new ParcelamentoRepository(context);
+        var repoPagamento = new PagamentoParcelamentoRepository(context);
+
+        var parcelamento = new Parcelamento
+        {
+            Id = Guid.NewGuid(),
+            Descricao = "Dívida Cascade",
+            ValorTotal = 1000.00m,
+            DataInicio = DateTime.Today
+        };
+        await repoParcelamento.AddAsync(parcelamento);
+
+        var pag1 = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 100.00m,
+            DataPagamento = DateTime.Today
+        };
+        var pag2 = new PagamentoParcelamento
+        {
+            Id = Guid.NewGuid(),
+            ParcelamentoId = parcelamento.Id,
+            ValorPago = 200.00m,
+            DataPagamento = DateTime.Today
+        };
+        await repoPagamento.AddAsync(pag1);
+        await repoPagamento.AddAsync(pag2);
+
+        // Act
+        await repoParcelamento.DeleteAsync(parcelamento.Id);
+
+        var retrievedParcelamento = await repoParcelamento.GetByIdAsync(parcelamento.Id);
+        var retrievedPagamentos = await repoPagamento.GetByParcelamentoIdAsync(parcelamento.Id);
+
+        // Assert
+        Assert.IsNull(retrievedParcelamento);
+        Assert.AreEqual(0, retrievedPagamentos.Count(), "Pagamentos should be cascade deleted by EF.");
     }
 }

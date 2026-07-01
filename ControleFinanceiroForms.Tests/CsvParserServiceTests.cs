@@ -69,16 +69,16 @@ public class CsvParserServiceTests
     }
 
     [TestMethod]
-    public async Task ParseCsvAsync_InvalidData_ThrowsFormatException()
+    public async Task ParseCsvAsync_InvalidData_SkipsUnparseableLines()
     {
         // Arrange
         var csvContent = "Data,Descricao,Valor\nNotADate,Supermercado,NotANumber";
         using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(csvContent));
 
-        // Act & Assert
-        await Assert.ThrowsExceptionAsync<FormatException>(async () =>
-        {
-            await _parserService.ParseCsvAsync(stream);
-        });
+        // Act — invalid lines are now skipped, not thrown (review-002 issue 007)
+        var result = await _parserService.ParseCsvAsync(stream);
+
+        // Assert — line was unparseable, so no transactions returned
+        Assert.IsFalse(result.Any());
     }
 }

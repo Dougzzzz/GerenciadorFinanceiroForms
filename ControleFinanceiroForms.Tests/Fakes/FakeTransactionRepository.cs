@@ -77,6 +77,14 @@ public sealed class FakeTransactionRepository : ITransactionRepository
         return Task.FromResult<IEnumerable<string>>(existing);
     }
 
+    public Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year)
+    {
+        var filtered = _store
+            .Where(t => t.Date.Month == month && t.Date.Year == year)
+            .ToList();
+        return Task.FromResult<IEnumerable<Transacao>>(filtered);
+    }
+
     // ── Test-helper properties ──────────────────────────────────────
     public int Count => _store.Count;
     public IReadOnlyList<Transacao> All => _store.AsReadOnly();

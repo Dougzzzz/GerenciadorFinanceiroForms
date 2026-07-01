@@ -62,9 +62,11 @@ public class CsvParserService : ICsvParserService
                 var tx = Transacao.Create(date, description, amount);
                 transactions.Add(tx);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new FormatException($"Failed to parse line: {line}", ex);
+                // Skip lines that don't match expected format (review-002 issue 007).
+                // Matches PdfParserService behavior — graceful degradation.
+                continue;
             }
         }
 

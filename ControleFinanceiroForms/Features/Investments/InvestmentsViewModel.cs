@@ -75,22 +75,37 @@ public partial class InvestmentsViewModel : ObservableObject
             TipoOperacao = NewTipoOperacao
         };
 
-        await _repository.AddAsync(inv);
-        Investments.Insert(0, inv); // Insert at top since list is descending order
+        try
+        {
+            await _repository.AddAsync(inv);
+            Investments.Insert(0, inv); // Insert at top since list is descending order
 
-        NewValue = null;
-        NewNote = string.Empty;
-        NewConta = string.Empty;
-        NewTipoInvestimento = string.Empty;
-        NewTipoOperacao = OperacaoInvestimento.SnapshotTotal;
+            NewValue = null;
+            NewNote = string.Empty;
+            NewConta = string.Empty;
+            NewTipoInvestimento = string.Empty;
+            NewTipoOperacao = OperacaoInvestimento.SnapshotTotal;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erro ao registrar investimento: {ex.Message}";
+        }
     }
 
     [RelayCommand]
     private async Task DeleteInvestmentAsync(Investimento? investimento)
     {
         if (investimento == null) return;
-        
-        await _repository.DeleteAsync(investimento.Id);
-        Investments.Remove(investimento);
+
+        ErrorMessage = null;
+        try
+        {
+            await _repository.DeleteAsync(investimento.Id);
+            Investments.Remove(investimento);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erro ao excluir investimento: {ex.Message}";
+        }
     }
 }

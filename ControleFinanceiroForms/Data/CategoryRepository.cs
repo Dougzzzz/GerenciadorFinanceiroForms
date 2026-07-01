@@ -30,7 +30,14 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task UpdateAsync(Categoria category)
     {
-        _context.Categorias.Update(category);
+        // Entity may come from a different DbContext (Transient lifetime),
+        // so attach it and mark as modified (review-002 issue 005).
+        var entry = _context.Entry(category);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.Categorias.Attach(category);
+            entry.State = EntityState.Modified;
+        }
         await _context.SaveChangesAsync();
     }
 

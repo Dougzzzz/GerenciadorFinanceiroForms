@@ -26,7 +26,6 @@ namespace ControleFinanceiroForms;
 public partial class App : Application
 {
     private readonly IHost _host;
-    private IServiceScope? _appScope;
 
     public App()
     {
@@ -87,14 +86,16 @@ public partial class App : Application
                 });
 
                 // ── Services & Repositories ────────────────────────────────
-                services.AddScoped<ITransactionRepository, TransactionRepository>();
-                services.AddScoped<IInvestmentRepository, InvestmentRepository>();
-                services.AddScoped<ICategoryRepository, CategoryRepository>();
-                services.AddScoped<IParcelamentoRepository, ParcelamentoRepository>();
-                services.AddScoped<IPagamentoParcelamentoRepository, PagamentoParcelamentoRepository>();
-                services.AddScoped<ICsvParserService, CsvParserService>();
-                services.AddScoped<IPdfParserService, PdfParserService>();
-                services.AddScoped<IFilePickerService, WindowsFilePickerService>();
+                // Transient: each ViewModel resolve gets its own DbContext,
+                // preventing concurrent-access crashes (review-002 issue 001).
+                services.AddTransient<ITransactionRepository, TransactionRepository>();
+                services.AddTransient<IInvestmentRepository, InvestmentRepository>();
+                services.AddTransient<ICategoryRepository, CategoryRepository>();
+                services.AddTransient<IParcelamentoRepository, ParcelamentoRepository>();
+                services.AddTransient<IPagamentoParcelamentoRepository, PagamentoParcelamentoRepository>();
+                services.AddTransient<ICsvParserService, CsvParserService>();
+                services.AddTransient<IPdfParserService, PdfParserService>();
+                services.AddTransient<IFilePickerService, WindowsFilePickerService>();
 
                 // ── ViewModels ─────────────────────────────────────────────
                 services.AddTransient<InvestmentsViewModel>();
@@ -124,22 +125,36 @@ public partial class App : Application
             args.SetObserved();
         };
 
+        // Catch unhandled exceptions on the WPF dispatcher thread (review-002 issue 002)
+        DispatcherUnhandledException += (_, args) =>
+        {
+            Log.Error(args.Exception, "Unhandled dispatcher exception");
+            MessageBox.Show(
+                $"Erro inesperado:\n{args.Exception.Message}",
+                "Erro",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
         try
         {
             await _host.StartAsync();
 
-            _appScope = _host.Services.CreateScope();
+            // Apply pending migrations in a short-lived scope (review-002 issue 001)
+            using (var migrationScope = _host.Services.CreateScope())
+            {
+                var db = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await db.Database.MigrateAsync();
+            }
 
-            // Apply pending migrations on startup (idempotent)
-            var db = _appScope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await db.Database.MigrateAsync();
-
-            var mainWindow = _appScope.ServiceProvider.GetRequiredService<MainWindow>();
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
             base.OnStartup(e);
         }
         catch (Exception ex)
         {
+            Log.Fatal(ex, "Falha ao iniciar o aplicativo");
             MessageBox.Show(
                 $"Falha ao iniciar o aplicativo:\n{ex.Message}",
                 "Erro de Inicialização",
@@ -153,7 +168,6 @@ public partial class App : Application
     {
         try
         {
-            _appScope?.Dispose();
             await _host.StopAsync();
         }
         finally

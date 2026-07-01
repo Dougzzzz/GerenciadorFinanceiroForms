@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly ImportTransactionsViewModel _importViewModel;
     private readonly ParcelamentosViewModel _parcelamentosViewModel;
     private readonly InvestmentsViewModel _investmentsViewModel;
+    private bool _initialized;
 
     public MainWindow(
         InvestmentsViewModel investmentsViewModel, 
@@ -44,18 +45,25 @@ public partial class MainWindow : Window
         DashboardViewControl.DataContext = dashboardViewModel;
         ParcelamentosViewControl.DataContext = parcelamentosViewModel;
 
-        // Load default dashboard on startup
+        // Load default dashboard on startup (review-002 issue 003: guard against double-load)
         Loaded += async (s, e) =>
         {
-            if (_dashboardViewModel.LoadDashboardCommand.CanExecute(null))
+            if (!_initialized)
             {
-                await _dashboardViewModel.LoadDashboardCommand.ExecuteAsync(null);
+                _initialized = true;
+                if (_dashboardViewModel.LoadDashboardCommand.CanExecute(null))
+                {
+                    await _dashboardViewModel.LoadDashboardCommand.ExecuteAsync(null);
+                }
             }
         };
     }
 
     private async void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        // Skip events fired during initial render (review-002 issue 003)
+        if (!_initialized) return;
+
         if (e.Source is TabControl tabControl)
         {
             switch (tabControl.SelectedIndex)

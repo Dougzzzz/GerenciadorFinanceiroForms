@@ -58,4 +58,11 @@ public class TransactionRepository : ITransactionRepository
             .Select(t => t.ChaveExclusiva)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year)
+    {
+        return await _context.Transacoes
+            .Where(t => t.Date.Month == month && t.Date.Year == year)
+            .ToListAsync();
+    }
 }

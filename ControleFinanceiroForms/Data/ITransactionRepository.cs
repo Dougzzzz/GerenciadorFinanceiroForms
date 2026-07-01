@@ -16,4 +16,5 @@ public interface ITransactionRepository
     Task UpdateAsync(Transacao transaction);
     Task DeleteAsync(Guid id);
     Task<IEnumerable<string>> GetExistingHashesAsync(IEnumerable<string> hashes);
+    Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year);
 }

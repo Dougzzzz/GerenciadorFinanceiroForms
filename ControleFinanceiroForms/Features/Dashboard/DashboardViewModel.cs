@@ -52,16 +52,13 @@ public partial class DashboardViewModel : ObservableObject
     public async Task LoadDashboardAsync()
     {
         var categories = await _categoryRepository.GetAllAsync();
-        var transactions = await _transactionRepository.GetAllAsync();
 
         var today = DateTime.Today;
         var currentMonth = today.Month;
         var currentYear = today.Year;
 
-        // Filtrar transações apenas do mês e ano atual
-        var currentTransactions = transactions
-            .Where(t => t.Date.Month == currentMonth && t.Date.Year == currentYear)
-            .ToList();
+        // Filtrar transações no banco de dados (review-002 issue 004)
+        var currentTransactions = await _transactionRepository.GetByMonthAsync(currentMonth, currentYear);
 
         var items = new List<DashboardItem>();
         decimal totalBudget = 0;

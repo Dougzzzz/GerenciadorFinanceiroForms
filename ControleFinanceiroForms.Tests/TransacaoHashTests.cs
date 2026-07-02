@@ -158,4 +158,23 @@ public sealed class TransacaoHashTests
         Assert.AreEqual(txInvariant.ChaveExclusiva, hashPtBr,
             "GerarHash must produce identical hashes regardless of thread culture (InvariantCulture required).");
     }
+
+    /// <summary>
+    /// Two transactions that differ only in AccountType must produce different hashes.
+    /// </summary>
+    [TestMethod]
+    public void GerarHash_DifferentAccountTypes_ProducesDifferentHashes()
+    {
+        // Arrange
+        var date = new DateTime(2026, 1, 15);
+        const string description = "Compra X";
+        const decimal amount = 100.00m;
+
+        var tx1 = Transacao.Create(date, description, amount, null, AccountType.Checking);
+        var tx2 = Transacao.Create(date, description, amount, null, AccountType.CreditCard);
+
+        // Assert
+        Assert.AreNotEqual(tx1.ChaveExclusiva, tx2.ChaveExclusiva,
+            "Transactions with different account types must not collide.");
+    }
 }

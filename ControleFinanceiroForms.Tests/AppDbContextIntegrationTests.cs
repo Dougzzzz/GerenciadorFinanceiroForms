@@ -217,6 +217,25 @@ public sealed class AppDbContextIntegrationTests
             "Saving a duplicate ChaveExclusiva must fail due to the unique index.");
     }
 
+    [TestMethod]
+    public async Task SaveAndRetrieve_Transacao_WithAccountType_ReturnsCorrectEntity()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var tx = Transacao.Create(new DateTime(2026, 5, 10), "Conta de luz", 320.50m, null, AccountType.CreditCard);
+        tx.Id = Guid.NewGuid();
+
+        // Act
+        await context.Transacoes.AddAsync(tx);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.Transacoes.FindAsync(tx.Id);
+
+        // Assert
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(AccountType.CreditCard, retrieved.AccountType);
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Regression tests — Issue 003 (MetaGasto unique constraint)
     // ─────────────────────────────────────────────────────────────

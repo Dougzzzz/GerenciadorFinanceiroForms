@@ -1,3 +1,4 @@
+using ControleFinanceiroForms.Data.Entities;
 using ControleFinanceiroForms.Features.ImportTransactions;
 
 namespace ControleFinanceiroForms.Tests;
@@ -80,5 +81,33 @@ public class CsvParserServiceTests
 
         // Assert — line was unparseable, so no transactions returned
         Assert.IsFalse(result.Any());
+    }
+
+    [TestMethod]
+    public async Task ParseCsvAsync_FaturaCsv_ReturnsParsedTransactions()
+    {
+        // Arrange
+        var csvContent = "Data de Compra;Nome no Cartão;Final do Cartão;Categoria;Descrição;Parcela;Valor (em US$);Cotação (em R$);Valor (em R$)\n" +
+                         "12/12/2025;ANA PAULA SIQUEIRA;8262;Foto / Fotocópia;JIM.COM* 49865135 THA;3/3;0;0;1142.72\n" +
+                         "19/01/2026;ANA PAULA SIQUEIRA;8262;Vestuário / Roupas;CEA GOI 715 ECPC;2/2;0;0;144.98";
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(csvContent));
+
+        // Act
+        var result = await _parserService.ParseCsvAsync(stream, AccountType.CreditCard);
+
+        // Assert
+        Assert.AreEqual(2, result.Count());
+        
+        var first = result.First();
+        Assert.AreEqual(new DateTime(2025, 12, 12), first.Date);
+        Assert.AreEqual("JIM.COM* 49865135 THA", first.Description);
+        Assert.AreEqual(-1142.72m, first.Amount);
+        Assert.AreEqual(AccountType.CreditCard, first.AccountType);
+
+        var second = result.Last();
+        Assert.AreEqual(new DateTime(2026, 1, 19), second.Date);
+        Assert.AreEqual("CEA GOI 715 ECPC", second.Description);
+        Assert.AreEqual(-144.98m, second.Amount);
+        Assert.AreEqual(AccountType.CreditCard, second.AccountType);
     }
 }

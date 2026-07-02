@@ -18,3 +18,4 @@ packages/
 # OS generated
 .DS_Store
 Thumbs.db
+publish/

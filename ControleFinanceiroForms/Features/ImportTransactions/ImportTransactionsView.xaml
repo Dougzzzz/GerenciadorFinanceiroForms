@@ -28,6 +28,7 @@
         <Grid Grid.Row="2" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="250" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             
@@ -38,8 +39,15 @@
                           DisplayMemberPath="Name"
                           Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
             </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                <TextBlock Text="Tipo da Conta (Obrigatório)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
+                <ComboBox ItemsSource="{Binding AvailableAccountTypes}"
+                          SelectedItem="{Binding SelectedAccountType}"
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+            </StackPanel>
             
-            <Button Grid.Column="1" Content="Selecionar Arquivo e Importar" VerticalAlignment="Bottom"
+            <Button Grid.Column="2" Content="Selecionar Arquivo e Importar" VerticalAlignment="Bottom"
                     Command="{Binding ImportCommand}"
                     IsEnabled="{Binding IsImporting, Converter={x:Static local:InverseBooleanConverter.Instance}}"
                     Background="#7132f5" Foreground="#ffffff" 

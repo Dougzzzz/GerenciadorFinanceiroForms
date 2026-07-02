@@ -31,7 +31,7 @@ public class FakeCsvParserService : ICsvParserService
 {
     public IEnumerable<Transacao> TransactionsToReturn { get; set; } = new List<Transacao>();
     
-    public Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream)
+    public Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking)
     {
         return Task.FromResult(TransactionsToReturn);
     }

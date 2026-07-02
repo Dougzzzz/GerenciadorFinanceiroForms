@@ -42,6 +42,9 @@ public partial class DashboardViewModel : ObservableObject
 
     public ObservableCollection<DashboardItem> DashboardItems { get; } = new();
 
+    public ObservableCollection<Transacao> CreditTransactions { get; } = new();
+    public ObservableCollection<Transacao> CheckingTransactions { get; } = new();
+
     public DashboardViewModel(ICategoryRepository categoryRepository, ITransactionRepository transactionRepository)
     {
         _categoryRepository = categoryRepository;
@@ -127,5 +130,16 @@ public partial class DashboardViewModel : ObservableObject
         RemainingBudget = totalBudget - totalSpent;
         GeneralProgress = totalBudget > 0 ? Math.Min((double)(totalSpent / totalBudget) * 100, 100) : 0;
         IsGeneralOverBudget = totalBudget > 0 && totalSpent > totalBudget;
+
+        CreditTransactions.Clear();
+        CheckingTransactions.Clear();
+
+        foreach (var tx in currentTransactions.OrderByDescending(t => t.Date))
+        {
+            if (tx.AccountType == AccountType.CreditCard)
+                CreditTransactions.Add(tx);
+            else
+                CheckingTransactions.Add(tx);
+        }
     }
 }

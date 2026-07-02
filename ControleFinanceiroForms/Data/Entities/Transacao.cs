@@ -27,14 +27,15 @@ public class Transacao
     /// already computed. This is the only way application code should create
     /// transactions — it guarantees the deduplication hash is always set.
     /// </summary>
-    public static Transacao Create(DateTime date, string description, decimal amount, Guid? categoryId = null)
+    public static Transacao Create(DateTime date, string description, decimal amount, Guid? categoryId = null, AccountType accountType = AccountType.Checking)
     {
         var tx = new Transacao
         {
             Date = date,
             Description = description,
             Amount = amount,
-            CategoryId = categoryId
+            CategoryId = categoryId,
+            AccountType = accountType
         };
         tx.GerarHash();
         return tx;
@@ -52,6 +53,8 @@ public class Transacao
     public Guid? CategoryId { get; set; }
 
     public Categoria? Categoria { get; set; }
+
+    public AccountType AccountType { get; set; } = AccountType.Checking;
 
     /// <summary>
     /// SHA-256 deduplication hash over (Date, Description, Amount).
@@ -77,7 +80,7 @@ public class Transacao
         // FormattableString.Invariant forces all format arguments — including
         // the decimal Amount — to use InvariantCulture, preventing locale-
         // specific separators (e.g., "," in pt-BR) from producing different hashes.
-        var input = FormattableString.Invariant($"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}");
+        var input = FormattableString.Invariant($"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}|{AccountType}");
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         ChaveExclusiva = Convert.ToHexString(bytes).ToLowerInvariant();
     }

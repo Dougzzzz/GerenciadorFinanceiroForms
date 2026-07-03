@@ -149,7 +149,7 @@
                                 <DataTemplate>
                                     <StackPanel Margin="4,2">
                                         <TextBlock Text="{Binding FormattedProgress}" FontSize="11" Foreground="#686b82" Margin="0,0,0,2"/>
-                                        <ProgressBar Value="{Binding PercentualQuitado}" Foreground="#7132f5" Style="{StaticResource ModernProgressBarStyle}"/>
+                                        <ProgressBar Value="{Binding PercentualQuitado, Mode=OneWay}" Foreground="#7132f5" Style="{StaticResource ModernProgressBarStyle}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

@@ -44,7 +44,13 @@
                 <TextBlock Text="Tipo da Conta (Obrigatório)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
                 <ComboBox ItemsSource="{Binding AvailableAccountTypes}"
                           SelectedItem="{Binding SelectedAccountType}"
-                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource EnumTranslationConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
             
             <Button Grid.Column="2" Content="Selecionar Arquivo e Importar" VerticalAlignment="Bottom"

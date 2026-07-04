@@ -6,13 +6,13 @@
              xmlns:local="clr-namespace:ControleFinanceiroForms.Features.Parcelamentos"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900"
-             Background="#ffffff">
+             Background="Transparent">
 
     <UserControl.Resources>
         <!-- Estilo para os Cards de Resumo -->
         <Style TargetType="Border" x:Key="CardStyle">
-            <Setter Property="Background" Value="#ffffff"/>
-            <Setter Property="BorderBrush" Value="#dedee5"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16"/>
@@ -46,10 +46,10 @@
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="Acompanhamento de Parcelamentos" 
-                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       FontSize="36" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" 
                        Margin="0,0,0,4"/>
             <TextBlock Text="Cadastre compras ou dívidas parceladas e amortize o saldo com pagamentos parciais." 
-                       FontSize="16" Foreground="#686b82"/>
+                       FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}"/>
         </StackPanel>
 
         <!-- Conteúdo Principal dividido em duas colunas -->
@@ -75,7 +75,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Novo Parcelamento" FontSize="16" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+                        <TextBlock Grid.Row="0" Text="Novo Parcelamento" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -87,28 +87,28 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                <TextBlock Text="Descrição" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewDescricao, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Descrição" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding NewDescricao, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                <TextBlock Text="Valor Total" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorTotal, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Valor Total" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding NewValorTotal, UpdateSourceTrigger=LostFocus}" Padding="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                                <TextBlock Text="Parcelas" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewNumeroParcelas, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Parcelas" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding NewNumeroParcelas, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="3" Margin="0,0,8,0">
-                                <TextBlock Text="Data Início" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <DatePicker SelectedDate="{Binding NewDataInicio}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Data Início" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <DatePicker SelectedDate="{Binding NewDataInicio}" Padding="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <Button Grid.Column="4" Content="Adicionar" VerticalAlignment="Bottom"
                                     Command="{Binding AddParcelamentoCommand}"
-                                    Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold" 
+                                    Background="{DynamicResource AccentBrush}" Foreground="#ffffff" FontWeight="SemiBold" 
                                     Padding="16,8" BorderThickness="0" Cursor="Hand">
                                 <Button.Resources>
                                     <Style TargetType="Border">
@@ -129,14 +129,15 @@
                     
                     <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" Foreground="#e02020" FontSize="14" VerticalAlignment="Center"/>
                     <CheckBox Grid.Column="1" Content="Ocultar Quitados" IsChecked="{Binding FiltroSomenteEmAberto}" 
-                              FontSize="14" Foreground="#101114" VerticalAlignment="Center" Cursor="Hand"/>
+                              FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" Cursor="Hand"/>
                 </Grid>
 
                 <!-- Tabela de Parcelamentos -->
                 <DataGrid Grid.Row="2" ItemsSource="{Binding VisibleParcelamentos}" SelectedItem="{Binding SelectedParcelamento}" 
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                          Background="#ffffff" BorderBrush="#dedee5" RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
-                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5" Cursor="Hand">
+                          Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" RowBackground="{DynamicResource SurfaceBrush}" AlternatingRowBackground="{DynamicResource AppBackgroundBrush}" 
+                          Foreground="{DynamicResource PrimaryTextBrush}"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}" Cursor="Hand">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Descrição" Binding="{Binding Descricao}" Width="2*" IsReadOnly="True" />
                         <DataGridTextColumn Header="Valor Total" Binding="{Binding ValorTotal, StringFormat=C}" Width="1.2*" IsReadOnly="True" />
@@ -148,8 +149,8 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="4,2">
-                                        <TextBlock Text="{Binding FormattedProgress}" FontSize="11" Foreground="#686b82" Margin="0,0,0,2"/>
-                                        <ProgressBar Value="{Binding PercentualQuitado, Mode=OneWay}" Foreground="#7132f5" Style="{StaticResource ModernProgressBarStyle}"/>
+                                        <TextBlock Text="{Binding FormattedProgress}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,2"/>
+                                        <ProgressBar Value="{Binding PercentualQuitado, Mode=OneWay}" Foreground="{DynamicResource AccentBrush}" Style="{StaticResource ModernProgressBarStyle}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -158,7 +159,7 @@
                         <DataGridTemplateColumn Header="Ações" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="Excluir" Background="Transparent" Foreground="#7132f5" BorderThickness="0" Cursor="Hand"
+                                    <Button Content="Excluir" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderThickness="0" Cursor="Hand"
                                             Command="{Binding DataContext.DeleteParcelamentoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
                                             CommandParameter="{Binding}" />
                                 </DataTemplate>
@@ -194,8 +195,8 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-                            <TextBlock Text="Amortizar Saldo Devedor" FontSize="16" FontWeight="Bold" Foreground="#101114"/>
-                            <TextBlock Text="{Binding SelectedParcelamento.Descricao, StringFormat=Registrar pagamento para: \{0\}}" FontSize="12" Foreground="#686b82"/>
+                            <TextBlock Text="Amortizar Saldo Devedor" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Text="{Binding SelectedParcelamento.Descricao, StringFormat=Registrar pagamento para: \{0\}}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"/>
                         </StackPanel>
 
                         <Grid Grid.Row="1">
@@ -210,23 +211,23 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
-                                <TextBlock Text="Valor Pago" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorPago, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Valor Pago" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding NewValorPago, UpdateSourceTrigger=LostFocus}" Padding="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,8">
-                                <TextBlock Text="Data Pagamento" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <DatePicker SelectedDate="{Binding NewDataPagamento}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Data Pagamento" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <DatePicker SelectedDate="{Binding NewDataPagamento}" Padding="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,8,0">
-                                <TextBlock Text="Nota (Opcional)" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewPagamentoNota, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBlock Text="Nota (Opcional)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding NewPagamentoNota, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
                             </StackPanel>
 
                             <Button Grid.Row="1" Grid.Column="2" Content="Pagar" VerticalAlignment="Bottom"
                                     Command="{Binding AddPagamentoCommand}"
-                                    Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold" 
+                                    Background="{DynamicResource AccentBrush}" Foreground="#ffffff" FontWeight="SemiBold" 
                                     Padding="24,8" BorderThickness="0" Cursor="Hand">
                                 <Button.Resources>
                                     <Style TargetType="Border">
@@ -246,12 +247,12 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Histórico de Amortizações" FontSize="16" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+                        <TextBlock Grid.Row="0" Text="Histórico de Amortizações" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
 
                         <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedParcelamentoPagamentos}" AutoGenerateColumns="False" 
-                                  CanUserAddRows="False" CanUserDeleteRows="False" Background="#ffffff" BorderBrush="#dedee5" 
-                                  RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
-                                  HorizontalGridLinesBrush="#dedee5">
+                                  CanUserAddRows="False" CanUserDeleteRows="False" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" 
+                                  RowBackground="{DynamicResource SurfaceBrush}" AlternatingRowBackground="{DynamicResource AppBackgroundBrush}" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
+                                  Foreground="{DynamicResource PrimaryTextBrush}" HorizontalGridLinesBrush="{DynamicResource BorderBrush}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Data" Binding="{Binding DataPagamento, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" />
                                 <DataGridTextColumn Header="Valor" Binding="{Binding ValorPago, StringFormat=C}" Width="100" IsReadOnly="True" />
@@ -260,7 +261,7 @@
                                 <DataGridTemplateColumn Header="Ações" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="Excluir" Background="Transparent" Foreground="#7132f5" BorderThickness="0" Cursor="Hand"
+                                            <Button Content="Excluir" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderThickness="0" Cursor="Hand"
                                                     Command="{Binding DataContext.DeletePagamentoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
                                                     CommandParameter="{Binding}" />
                                         </DataTemplate>

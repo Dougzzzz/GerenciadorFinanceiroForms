@@ -24,6 +24,7 @@ public partial class DashboardViewModel : ObservableObject
 {
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITransactionRepository _transactionRepository;
+    private readonly IContaRepository _contaRepository;
 
     [ObservableProperty]
     private decimal _totalBudget;
@@ -42,13 +43,28 @@ public partial class DashboardViewModel : ObservableObject
 
     public ObservableCollection<DashboardItem> DashboardItems { get; } = new();
 
-    public ObservableCollection<Transacao> CreditTransactions { get; } = new();
-    public ObservableCollection<Transacao> CheckingTransactions { get; } = new();
+    public ObservableCollection<Transacao> RecentTransactions { get; } = new();
 
-    public DashboardViewModel(ICategoryRepository categoryRepository, ITransactionRepository transactionRepository)
+    public ObservableCollection<Conta> AvailableContas { get; } = new();
+
+    private Conta? _selectedConta;
+    public Conta? SelectedConta
+    {
+        get => _selectedConta;
+        set
+        {
+            if (SetProperty(ref _selectedConta, value))
+            {
+                _ = LoadDashboardAsync();
+            }
+        }
+    }
+
+    public DashboardViewModel(ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, IContaRepository contaRepository)
     {
         _categoryRepository = categoryRepository;
         _transactionRepository = transactionRepository;
+        _contaRepository = contaRepository;
     }
 
     [RelayCommand]
@@ -60,8 +76,24 @@ public partial class DashboardViewModel : ObservableObject
         var currentMonth = today.Month;
         var currentYear = today.Year;
 
-        // Filtrar transações no banco de dados (review-002 issue 004)
+        var allContas = await _contaRepository.GetAllAsync();
+        if (AvailableContas.Count == 0 || AvailableContas.Count != allContas.Count() + 1)
+        {
+            var previousSelection = SelectedConta?.Id;
+            AvailableContas.Clear();
+            AvailableContas.Add(new Conta { Id = Guid.Empty, Name = "Todas as Contas" }); // Dummy for 'All'
+            foreach (var c in allContas) AvailableContas.Add(c);
+            
+            _selectedConta = AvailableContas.FirstOrDefault(c => c.Id == previousSelection) ?? AvailableContas.First();
+            OnPropertyChanged(nameof(SelectedConta));
+        }
+
         var currentTransactions = await _transactionRepository.GetByMonthAsync(currentMonth, currentYear);
+        
+        if (SelectedConta != null && SelectedConta.Id != Guid.Empty)
+        {
+            currentTransactions = currentTransactions.Where(t => t.ContaId == SelectedConta.Id).ToList();
+        }
 
         var items = new List<DashboardItem>();
         decimal totalBudget = 0;
@@ -131,15 +163,10 @@ public partial class DashboardViewModel : ObservableObject
         GeneralProgress = totalBudget > 0 ? Math.Min((double)(totalSpent / totalBudget) * 100, 100) : 0;
         IsGeneralOverBudget = totalBudget > 0 && totalSpent > totalBudget;
 
-        CreditTransactions.Clear();
-        CheckingTransactions.Clear();
-
+        RecentTransactions.Clear();
         foreach (var tx in currentTransactions.OrderByDescending(t => t.Date))
         {
-            if (tx.AccountType == AccountType.CreditCard)
-                CreditTransactions.Add(tx);
-            else
-                CheckingTransactions.Add(tx);
+            RecentTransactions.Add(tx);
         }
     }
 }

@@ -106,7 +106,7 @@ public class PdfParserService : IPdfParserService
                     description = "Transação sem descrição";
                 }
 
-                var tx = Transacao.Create(date, description, amount);
+                var tx = Transacao.Create(date, description, amount, Guid.Empty);
                 transactions.Add(tx);
             }
         }

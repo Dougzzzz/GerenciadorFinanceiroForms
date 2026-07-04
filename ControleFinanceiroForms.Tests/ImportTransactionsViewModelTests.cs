@@ -31,7 +31,7 @@ public class FakeCsvParserService : ICsvParserService
 {
     public IEnumerable<Transacao> TransactionsToReturn { get; set; } = new List<Transacao>();
     
-    public Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking)
+    public Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, Guid contaId = default)
     {
         return Task.FromResult(TransactionsToReturn);
     }
@@ -55,6 +55,7 @@ public class ImportTransactionsViewModelTests
     private FakePdfParserService _pdfParserService = null!;
     private FakeFilePickerService _filePickerService = null!;
     private FakeCategoryRepository _categoryRepository = null!;
+    private FakeContaRepository _contaRepository = null!;
     private ImportTransactionsViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -65,13 +66,15 @@ public class ImportTransactionsViewModelTests
         _pdfParserService = new FakePdfParserService();
         _filePickerService = new FakeFilePickerService();
         _categoryRepository = new FakeCategoryRepository();
+        _contaRepository = new FakeContaRepository();
         
         _viewModel = new ImportTransactionsViewModel(
             _repository, 
             _parserService, 
             _pdfParserService,
             _filePickerService,
-            _categoryRepository);
+            _categoryRepository,
+            _contaRepository);
     }
 
     [TestMethod]

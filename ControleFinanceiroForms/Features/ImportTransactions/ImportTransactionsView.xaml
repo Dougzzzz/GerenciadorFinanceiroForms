@@ -4,12 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ControleFinanceiroForms.Features.ImportTransactions"
+             xmlns:converters="clr-namespace:ControleFinanceiroForms.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             Background="#ffffff">
+             Background="Transparent">
              
+    <UserControl.Resources>
+        <converters:EnumTranslationConverter x:Key="EnumTranslationConverter" />
+    </UserControl.Resources>
+
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -18,10 +24,10 @@
 
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="Importar Transações" 
-                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       FontSize="36" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" 
                        Margin="0,0,0,4" />
             <TextBlock Text="Selecione um arquivo CSV com as suas transações. Transações já importadas serão ignoradas." 
-                       FontSize="16" Foreground="#686b82" 
+                       FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}" 
                        TextWrapping="Wrap" />
         </StackPanel>
 
@@ -30,35 +36,47 @@
                 <ColumnDefinition Width="250" />
                 <ColumnDefinition Width="250" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                <TextBlock Text="Categoria Padrão (Opcional)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
+                <TextBlock Text="Categoria Padrão (Opcional)" FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
                 <ComboBox ItemsSource="{Binding Categories}"
                           SelectedItem="{Binding SelectedCategory}"
                           DisplayMemberPath="Name"
-                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+                          Padding="8" FontSize="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                          Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                <TextBlock Text="Tipo da Conta (Obrigatório)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
-                <ComboBox ItemsSource="{Binding AvailableAccountTypes}"
-                          SelectedItem="{Binding SelectedAccountType}"
-                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource EnumTranslationConverter}}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
+                <TextBlock Text="Conta (Obrigatório)" FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+                <ComboBox ItemsSource="{Binding AvailableContas}"
+                          SelectedItem="{Binding SelectedConta}"
+                          DisplayMemberPath="Name"
+                          Padding="8" FontSize="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                          Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}">
                 </ComboBox>
             </StackPanel>
             
             <Button Grid.Column="2" Content="Selecionar Arquivo e Importar" VerticalAlignment="Bottom"
                     Command="{Binding ImportCommand}"
                     IsEnabled="{Binding IsImporting, Converter={x:Static local:InverseBooleanConverter.Instance}}"
-                    Background="#7132f5" Foreground="#ffffff" 
+                    Background="{DynamicResource AccentBrush}" Foreground="#ffffff" 
                     FontSize="16" FontWeight="SemiBold" 
-                    Padding="16,10" BorderThickness="0" Cursor="Hand">
+                    Padding="16,10" BorderThickness="0" Cursor="Hand" Margin="0,0,16,0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="12"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+            <Button Grid.Column="3" Content="Baixar Planilha Modelo" VerticalAlignment="Bottom"
+                    Command="{Binding DownloadTemplateCommand}"
+                    Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource AccentBrush}" 
+                    BorderBrush="{DynamicResource AccentBrush}"
+                    FontSize="16" FontWeight="SemiBold" 
+                    Padding="16,10" BorderThickness="1" Cursor="Hand">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="12"/>
@@ -68,8 +86,20 @@
         </Grid>
 
         <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" 
-                   Foreground="#101114" FontSize="16" FontWeight="SemiBold" 
-                   Margin="0,20,0,0" />
+                   Foreground="{DynamicResource PrimaryTextBrush}" FontSize="14" FontWeight="SemiBold" 
+                   Margin="0,8,0,16" />
+
+        <DataGrid Grid.Row="4" ItemsSource="{Binding ImportedTransactions}" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" CanUserDeleteRows="False" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" 
+                  RowBackground="{DynamicResource SurfaceBrush}" AlternatingRowBackground="{DynamicResource AppBackgroundBrush}" 
+                  Foreground="{DynamicResource PrimaryTextBrush}"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" />
+                <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*" IsReadOnly="True" />
+                <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
 
     </Grid>
 </UserControl>

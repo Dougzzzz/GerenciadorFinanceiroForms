@@ -26,6 +26,10 @@ public sealed class AppDbContextIntegrationTests
 
         var context = new AppDbContext(options);
         context.Database.EnsureCreated(); // apply EF model schema in-memory
+        
+        // Seed default Conta for Transacao.Create defaults
+        context.Database.ExecuteSqlRaw("INSERT INTO Contas (Id, Name, Type) VALUES ('00000000-0000-0000-0000-000000000000', 'Test Default Conta', 0)");
+        
         return context;
     }
 
@@ -218,14 +222,17 @@ public sealed class AppDbContextIntegrationTests
     }
 
     [TestMethod]
-    public async Task SaveAndRetrieve_Transacao_WithAccountType_ReturnsCorrectEntity()
+    public async Task SaveAndRetrieve_Transacao_WithContaId_ReturnsCorrectEntity()
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var tx = Transacao.Create(new DateTime(2026, 5, 10), "Conta de luz", 320.50m, null, AccountType.CreditCard);
+        var contaId = Guid.NewGuid();
+        var conta = new Conta { Id = contaId, Name = "Test Conta", Type = ContaType.CartaoDeCredito };
+        var tx = Transacao.Create(new DateTime(2026, 5, 10), "Conta de luz", 320.50m, null, contaId);
         tx.Id = Guid.NewGuid();
 
         // Act
+        await context.Contas.AddAsync(conta);
         await context.Transacoes.AddAsync(tx);
         await context.SaveChangesAsync();
 
@@ -233,7 +240,7 @@ public sealed class AppDbContextIntegrationTests
 
         // Assert
         Assert.IsNotNull(retrieved);
-        Assert.AreEqual(AccountType.CreditCard, retrieved.AccountType);
+        Assert.AreEqual(contaId, retrieved.ContaId);
     }
 
     // ─────────────────────────────────────────────────────────────

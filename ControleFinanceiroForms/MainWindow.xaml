@@ -7,11 +7,13 @@
         xmlns:inv="clr-namespace:ControleFinanceiroForms.Features.Investments"
         xmlns:import="clr-namespace:ControleFinanceiroForms.Features.ImportTransactions"
         xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
+        xmlns:contas="clr-namespace:ControleFinanceiroForms.Features.Contas"
         xmlns:dashboard="clr-namespace:ControleFinanceiroForms.Features.Dashboard"
         xmlns:parc="clr-namespace:ControleFinanceiroForms.Features.Parcelamentos"
+        xmlns:transacoes="clr-namespace:ControleFinanceiroForms.Features.Transacoes"
         mc:Ignorable="d"
         Title="Controle Financeiro" Height="700" Width="1024"
-        Background="#f8f8fa">
+        Background="{DynamicResource AppBackgroundBrush}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -22,8 +24,14 @@
             <TabItem Header="Dashboard" FontSize="16">
                 <dashboard:DashboardView x:Name="DashboardViewControl" />
             </TabItem>
+            <TabItem Header="Transações" FontSize="16">
+                <transacoes:TransacoesView x:Name="TransacoesViewControl" />
+            </TabItem>
             <TabItem Header="Categorias" FontSize="16">
                 <categories:CategoriesView x:Name="CategoriesViewControl" />
+            </TabItem>
+            <TabItem Header="Minhas Contas" FontSize="16">
+                <contas:ContasView x:Name="ContasViewControl" />
             </TabItem>
             <TabItem Header="Importar Transa&#231;&#245;es" FontSize="16">
                 <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />
@@ -37,15 +45,25 @@
         </TabControl>
 
         <!-- Footer com botao de acesso rapido aos logs -->
-        <Border Grid.Row="1" Background="#f0f0f5" BorderBrush="#dedee5" BorderThickness="0,1,0,0" Padding="12,6">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button x:Name="ThemeToggleButton"
+                            Content="&#127762; Alternar Tema"
+                            Click="ThemeToggleButton_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" Cursor="Hand"
+                            Padding="8,4"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="OpenLogsButton"
                         Content="&#128194; Abrir pasta de logs"
                         Click="OpenLogsButton_Click"
                         Background="Transparent" BorderThickness="0"
-                        Foreground="#686b82" FontSize="12" Cursor="Hand"
+                        Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" Cursor="Hand"
                         Padding="8,4"/>
-            </StackPanel>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

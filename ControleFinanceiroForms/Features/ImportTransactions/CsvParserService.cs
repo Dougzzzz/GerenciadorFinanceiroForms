@@ -5,7 +5,7 @@ namespace ControleFinanceiroForms.Features.ImportTransactions;
 
 public interface ICsvParserService
 {
-    Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking);
+    Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, Guid contaId = default);
 }
 
 public class CsvParserService : ICsvParserService
@@ -16,12 +16,13 @@ public class CsvParserService : ICsvParserService
     {
         _profiles = new List<ICsvProfile>
         {
+            new StandardProfile(),
             new FaturaProfile(),
             new DefaultProfile()
         };
     }
 
-    public async Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking)
+    public async Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, Guid contaId = default)
     {
         var transactions = new List<Transacao>();
         using var reader = new StreamReader(stream);
@@ -49,7 +50,7 @@ public class CsvParserService : ICsvParserService
 
             try
             {
-                var tx = profile.ParseLine(values, accountType);
+                var tx = profile.ParseLine(values, contaId);
                 transactions.Add(tx);
             }
             catch (Exception)

@@ -24,6 +24,7 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Transacao> Transacoes => Set<Transacao>();
+    public DbSet<Conta> Contas => Set<Conta>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<MetaGasto> MetasGasto => Set<MetaGasto>();
     public DbSet<Investimento> Investimentos => Set<Investimento>();
@@ -50,6 +51,11 @@ public class AppDbContext : DbContext
                   .WithMany(c => c.Transacoes)
                   .HasForeignKey(t => t.CategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(t => t.Conta)
+                  .WithMany(c => c.Transacoes)
+                  .HasForeignKey(t => t.ContaId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ── Categoria ──────────────────────────────────────────────
@@ -58,6 +64,14 @@ public class AppDbContext : DbContext
             entity.HasKey(c => c.Id);
             entity.Property(c => c.Name).IsRequired().HasMaxLength(200);
             entity.Property(c => c.BudgetLimit).HasColumnType("TEXT");
+        });
+
+        // ── Conta ──────────────────────────────────────────────
+        modelBuilder.Entity<Conta>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(200);
+            entity.Property(c => c.Type).IsRequired();
         });
 
         // ── MetaGasto ──────────────────────────────────────────────

@@ -4,6 +4,90 @@
              xmlns:local="clr-namespace:ControleFinanceiroForms"
              xmlns:converters="clr-namespace:ControleFinanceiroForms.Converters">
     <Application.Resources>
-         <converters:EnumTranslationConverter x:Key="EnumTranslationConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/LightTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:EnumTranslationConverter x:Key="EnumTranslationConverter" />
+
+            <!-- Global Styles para TabItem (Abas) -->
+            <Style TargetType="TabItem">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Border x:Name="Border" Padding="16,10" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2" Cursor="Hand">
+                                <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="0,2,0,2"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Flat Template para ComboBox -->
+            <ControlTemplate x:Key="FlatComboBoxTemplate" TargetType="ComboBox">
+                <Grid>
+                    <ToggleButton x:Name="ToggleButton" 
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  Background="{TemplateBinding Background}"
+                                  Foreground="{TemplateBinding Foreground}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
+                                  ClickMode="Press">
+                        <ToggleButton.Template>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                                    <Path x:Name="Arrow" Fill="{TemplateBinding Foreground}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                </Border>
+                            </ControlTemplate>
+                        </ToggleButton.Template>
+                    </ToggleButton>
+                    <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,0,32,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                        <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                            <Border x:Name="DropDownBorder" Background="{DynamicResource SurfaceBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" CornerRadius="4" Margin="0,4,0,0"/>
+                            <ScrollViewer Margin="4,8,4,8" SnapsToDevicePixels="True">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                            </ScrollViewer>
+                        </Grid>
+                    </Popup>
+                </Grid>
+            </ControlTemplate>
+
+            <Style TargetType="ComboBox">
+                <Setter Property="Template" Value="{StaticResource FlatComboBoxTemplate}" />
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                <Setter Property="Padding" Value="8" />
+            </Style>
+
+            <!-- Global Styles para ComboBoxItem e DataGridColumnHeader -->
+            <Style TargetType="ComboBoxItem">
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
+
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                <Setter Property="Padding" Value="8,4" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                <Setter Property="BorderThickness" Value="0,0,1,1" />
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

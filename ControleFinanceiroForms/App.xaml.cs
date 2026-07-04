@@ -14,8 +14,10 @@ using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
+using ControleFinanceiroForms.Features.Contas;
 using ControleFinanceiroForms.Features.Dashboard;
 using ControleFinanceiroForms.Features.Parcelamentos;
+using ControleFinanceiroForms.Features.Transacoes;
 
 
 namespace ControleFinanceiroForms;
@@ -27,6 +29,7 @@ namespace ControleFinanceiroForms;
 public partial class App : Application
 {
     private readonly IHost _host;
+    public static bool IsDarkMode { get; private set; }
 
     public App()
     {
@@ -90,6 +93,7 @@ public partial class App : Application
                 // Transient: each ViewModel resolve gets its own DbContext,
                 // preventing concurrent-access crashes (review-002 issue 001).
                 services.AddTransient<ITransactionRepository, TransactionRepository>();
+                services.AddTransient<IContaRepository, ContaRepository>();
                 services.AddTransient<IInvestmentRepository, InvestmentRepository>();
                 services.AddTransient<ICategoryRepository, CategoryRepository>();
                 services.AddTransient<IParcelamentoRepository, ParcelamentoRepository>();
@@ -102,8 +106,10 @@ public partial class App : Application
                 services.AddTransient<InvestmentsViewModel>();
                 services.AddTransient<ImportTransactionsViewModel>();
                 services.AddTransient<CategoriesViewModel>();
+                services.AddTransient<ContasViewModel>();
                 services.AddTransient<DashboardViewModel>();
                 services.AddTransient<ParcelamentosViewModel>();
+                services.AddTransient<TransacoesViewModel>();
 
                 // ── Presentation ───────────────────────────────────────────
                 services.AddTransient<MainWindow>();
@@ -185,5 +191,29 @@ public partial class App : Application
             Log.CloseAndFlush();
             base.OnExit(e);
         }
+    }
+
+    public static void ToggleTheme()
+    {
+        IsDarkMode = !IsDarkMode;
+        ChangeTheme(IsDarkMode);
+    }
+
+    private static void ChangeTheme(bool isDark)
+    {
+        var themeName = isDark ? "DarkTheme" : "LightTheme";
+        var dict = new ResourceDictionary { Source = new Uri($"pack://application:,,,/ControleFinanceiroForms;component/Themes/{themeName}.xaml") };
+
+        // Find and replace the existing theme dictionary
+        var mergedDicts = Current.Resources.MergedDictionaries;
+        
+        // Remove old theme dictionary (assuming only themes are in the Themes folder)
+        var oldTheme = mergedDicts.FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Theme.xaml"));
+        if (oldTheme != null)
+        {
+            mergedDicts.Remove(oldTheme);
+        }
+
+        mergedDicts.Add(dict);
     }
 }

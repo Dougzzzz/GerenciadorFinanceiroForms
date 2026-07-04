@@ -14,6 +14,7 @@ public partial class ImportTransactionsViewModel : ObservableObject
     private readonly IPdfParserService _pdfParserService;
     private readonly IFilePickerService _filePickerService;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IContaRepository _contaRepository;
 
     [ObservableProperty]
     private ObservableCollection<Categoria> _categories = new();
@@ -21,10 +22,14 @@ public partial class ImportTransactionsViewModel : ObservableObject
     [ObservableProperty]
     private Categoria? _selectedCategory;
 
-    public IReadOnlyList<AccountType> AvailableAccountTypes { get; } = Enum.GetValues<AccountType>();
+    [ObservableProperty]
+    private ObservableCollection<Conta> _availableContas = new();
 
     [ObservableProperty]
-    private AccountType _selectedAccountType = AccountType.Checking;
+    private Conta? _selectedConta;
+
+    [ObservableProperty]
+    private ObservableCollection<Transacao> _importedTransactions = new();
 
     [ObservableProperty]
     private string? _statusMessage;
@@ -37,23 +42,39 @@ public partial class ImportTransactionsViewModel : ObservableObject
         ICsvParserService parserService,
         IPdfParserService pdfParserService,
         IFilePickerService filePickerService,
-        ICategoryRepository categoryRepository)
+        ICategoryRepository categoryRepository,
+        IContaRepository contaRepository)
     {
         _transactionRepository = transactionRepository;
         _parserService = parserService;
         _pdfParserService = pdfParserService;
         _filePickerService = filePickerService;
         _categoryRepository = categoryRepository;
+        _contaRepository = contaRepository;
     }
 
     [RelayCommand]
-    private async Task LoadCategoriesAsync()
+    private async Task LoadInitialDataAsync()
     {
-        var items = await _categoryRepository.GetAllAsync();
+        var categoryItems = await _categoryRepository.GetAllAsync();
         Categories.Clear();
-        foreach (var item in items)
+        foreach (var item in categoryItems)
         {
             Categories.Add(item);
+        }
+
+        var contaItems = await _contaRepository.GetAllAsync();
+        AvailableContas.Clear();
+        foreach (var item in contaItems)
+        {
+            AvailableContas.Add(item);
+        }
+
+        var txItems = await _transactionRepository.GetAllAsync();
+        ImportedTransactions.Clear();
+        foreach (var item in txItems.OrderByDescending(t => t.Date).Take(100))
+        {
+            ImportedTransactions.Add(item);
         }
     }
 
@@ -70,13 +91,15 @@ public partial class ImportTransactionsViewModel : ObservableObject
         try
         {
             IEnumerable<Transacao> parsedTransactions;
+            var contaId = SelectedConta?.Id ?? Guid.Empty;
+
             if (fileExtension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
             {
                 parsedTransactions = await _pdfParserService.ParsePdfAsync(stream);
             }
             else
             {
-                parsedTransactions = await _parserService.ParseCsvAsync(stream, SelectedAccountType);
+                parsedTransactions = await _parserService.ParseCsvAsync(stream, contaId);
             }
 
             var parsedTransactionsList = parsedTransactions.ToList();
@@ -96,6 +119,32 @@ public partial class ImportTransactionsViewModel : ObservableObject
                 {
                     tx.CategoryId = SelectedCategory.Id;
                 }
+                else if (!string.IsNullOrWhiteSpace(tx.NomeCategoriaOriginal))
+                {
+                    var catName = tx.NomeCategoriaOriginal.Trim();
+                    var existingCategory = Categories.FirstOrDefault(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase));
+                    if (existingCategory != null)
+                    {
+                        tx.CategoryId = existingCategory.Id;
+                    }
+                    else
+                    {
+                        // Create category on the fly
+                        var newCategory = new Categoria { Name = catName };
+                        await _categoryRepository.AddAsync(newCategory);
+                        Categories.Add(newCategory);
+                        tx.CategoryId = newCategory.Id;
+                    }
+                }
+                
+                // If the parser didn't already set ContaId (e.g. PDF parser), set it here
+                if (tx.ContaId == Guid.Empty && SelectedConta != null)
+                {
+                    tx.ContaId = SelectedConta.Id;
+                }
+
+                // Recalculate hash because ContaId or CategoryId may have changed
+                tx.GerarHash();
 
                 if (existingHashes.Contains(tx.ChaveExclusiva))
                 {
@@ -112,6 +161,7 @@ public partial class ImportTransactionsViewModel : ObservableObject
             if (toAdd.Any())
             {
                 await _transactionRepository.AddRangeAsync(toAdd);
+                await LoadInitialDataAsync(); // Refresh list
             }
 
             StatusMessage = $"Importação concluída. Adicionadas: {addedCount}. Duplicadas ignoradas: {duplicateCount}.";
@@ -123,6 +173,23 @@ public partial class ImportTransactionsViewModel : ObservableObject
         finally
         {
             IsImporting = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DownloadTemplateAsync()
+    {
+        var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "modelo_importacao.csv");
+        var csvContent = "Data,Descricao,Valor,Categoria\n2023-12-01,Compra no Mercado,-150.50,Alimentacao\n2023-12-05,Salario,3500.00,Renda\n";
+        
+        try
+        {
+            await File.WriteAllTextAsync(filePath, csvContent);
+            StatusMessage = $"Modelo salvo em: {filePath}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Erro ao salvar modelo: {ex.Message}";
         }
     }
 }

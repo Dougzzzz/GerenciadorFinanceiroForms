@@ -1,0 +1,66 @@
+<UserControl x:Class="ControleFinanceiroForms.Features.Transacoes.TransacoesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900"
+             Background="Transparent">
+             
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Transações" 
+                       FontSize="36" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" 
+                       Margin="0,0,0,4" />
+            <TextBlock Text="Gerencie todas as suas transações. Você pode adicionar manualmente ou editar as importadas." 
+                       FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}" 
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <DataGrid x:Name="DataGridTransacoes" Grid.Row="2" ItemsSource="{Binding Transacoes}" 
+                  AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="False"
+                  RowEditEnding="DataGrid_RowEditEnding"
+                  Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" 
+                  RowBackground="{DynamicResource SurfaceBrush}" AlternatingRowBackground="{DynamicResource AppBackgroundBrush}" 
+                  Foreground="{DynamicResource PrimaryTextBrush}"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Width="100" />
+                <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*" />
+                <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=N2}" Width="120" />
+                
+                <DataGridComboBoxColumn Header="Categoria" 
+                                        ItemsSource="{Binding DataContext.Categorias, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        SelectedValueBinding="{Binding CategoryId}" 
+                                        SelectedValuePath="Id" DisplayMemberPath="Name" Width="150" />
+
+                <DataGridComboBoxColumn Header="Conta" 
+                                        ItemsSource="{Binding DataContext.Contas, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        SelectedValueBinding="{Binding ContaId}" 
+                                        SelectedValuePath="Id" DisplayMemberPath="Name" Width="150" />
+
+                <DataGridTemplateColumn Header="Ações" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Excluir" Command="{Binding DataContext.DeleteTransacaoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" Background="#ff4444" Foreground="White" BorderThickness="0" Padding="8,4" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
+</UserControl>

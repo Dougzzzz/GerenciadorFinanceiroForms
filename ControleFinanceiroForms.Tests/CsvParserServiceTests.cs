@@ -93,7 +93,8 @@ public class CsvParserServiceTests
         using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(csvContent));
 
         // Act
-        var result = await _parserService.ParseCsvAsync(stream, AccountType.CreditCard);
+        var contaId = Guid.NewGuid();
+        var result = await _parserService.ParseCsvAsync(stream, contaId);
 
         // Assert
         Assert.AreEqual(2, result.Count());
@@ -102,12 +103,12 @@ public class CsvParserServiceTests
         Assert.AreEqual(new DateTime(2025, 12, 12), first.Date);
         Assert.AreEqual("JIM.COM* 49865135 THA", first.Description);
         Assert.AreEqual(-1142.72m, first.Amount);
-        Assert.AreEqual(AccountType.CreditCard, first.AccountType);
+        Assert.AreEqual(contaId, first.ContaId);
 
         var second = result.Last();
         Assert.AreEqual(new DateTime(2026, 1, 19), second.Date);
         Assert.AreEqual("CEA GOI 715 ECPC", second.Description);
         Assert.AreEqual(-144.98m, second.Amount);
-        Assert.AreEqual(AccountType.CreditCard, second.AccountType);
+        Assert.AreEqual(contaId, second.ContaId);
     }
 }

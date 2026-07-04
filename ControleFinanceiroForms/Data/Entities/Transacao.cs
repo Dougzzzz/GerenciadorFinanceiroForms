@@ -27,7 +27,7 @@ public class Transacao
     /// already computed. This is the only way application code should create
     /// transactions — it guarantees the deduplication hash is always set.
     /// </summary>
-    public static Transacao Create(DateTime date, string description, decimal amount, Guid? categoryId = null, AccountType accountType = AccountType.Checking)
+    public static Transacao Create(DateTime date, string description, decimal amount, Guid? categoryId = null, Guid contaId = default)
     {
         var tx = new Transacao
         {
@@ -35,7 +35,7 @@ public class Transacao
             Description = description,
             Amount = amount,
             CategoryId = categoryId,
-            AccountType = accountType
+            ContaId = contaId
         };
         tx.GerarHash();
         return tx;
@@ -54,7 +54,14 @@ public class Transacao
 
     public Categoria? Categoria { get; set; }
 
-    public AccountType AccountType { get; set; } = AccountType.Checking;
+    public Guid ContaId { get; set; }
+    public Conta? Conta { get; set; }
+
+    /// <summary>
+    /// Temporary property used during CSV parsing to hold the raw category name.
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? NomeCategoriaOriginal { get; set; }
 
     /// <summary>
     /// SHA-256 deduplication hash over (Date, Description, Amount).
@@ -80,7 +87,7 @@ public class Transacao
         // FormattableString.Invariant forces all format arguments — including
         // the decimal Amount — to use InvariantCulture, preventing locale-
         // specific separators (e.g., "," in pt-BR) from producing different hashes.
-        var input = FormattableString.Invariant($"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}|{AccountType}");
+        var input = FormattableString.Invariant($"{Date:yyyy-MM-dd}|{Description}|{Amount:F2}|{ContaId}");
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         ChaveExclusiva = Convert.ToHexString(bytes).ToLowerInvariant();
     }

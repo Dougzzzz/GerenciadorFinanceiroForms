@@ -13,6 +13,7 @@ public class DashboardViewModelTests
 {
     private FakeCategoryRepository _categoryRepository = null!;
     private FakeTransactionRepository _transactionRepository = null!;
+    private FakeContaRepository _contaRepository = null!;
     private DashboardViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -20,7 +21,8 @@ public class DashboardViewModelTests
     {
         _categoryRepository = new FakeCategoryRepository();
         _transactionRepository = new FakeTransactionRepository();
-        _viewModel = new DashboardViewModel(_categoryRepository, _transactionRepository);
+        _contaRepository = new FakeContaRepository();
+        _viewModel = new DashboardViewModel(_categoryRepository, _transactionRepository, _contaRepository);
     }
 
     [TestMethod]

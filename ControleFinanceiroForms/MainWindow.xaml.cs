@@ -6,6 +6,7 @@ using System.Diagnostics;
 using ControleFinanceiroForms.Features.Investments;
 using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
+using ControleFinanceiroForms.Features.Contas;
 using ControleFinanceiroForms.Features.Dashboard;
 using ControleFinanceiroForms.Features.Parcelamentos;
 
@@ -20,30 +21,38 @@ public partial class MainWindow : Window
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly CategoriesViewModel _categoriesViewModel;
     private readonly ImportTransactionsViewModel _importViewModel;
+    private readonly ContasViewModel _contasViewModel;
     private readonly ParcelamentosViewModel _parcelamentosViewModel;
     private readonly InvestmentsViewModel _investmentsViewModel;
+    private readonly ControleFinanceiroForms.Features.Transacoes.TransacoesViewModel _transacoesViewModel;
     private bool _initialized;
 
     public MainWindow(
         InvestmentsViewModel investmentsViewModel, 
         ImportTransactionsViewModel importViewModel, 
         CategoriesViewModel categoriesViewModel,
+        ContasViewModel contasViewModel,
         DashboardViewModel dashboardViewModel,
-        ParcelamentosViewModel parcelamentosViewModel)
+        ParcelamentosViewModel parcelamentosViewModel,
+        ControleFinanceiroForms.Features.Transacoes.TransacoesViewModel transacoesViewModel)
     {
         InitializeComponent();
 
         _investmentsViewModel = investmentsViewModel;
         _importViewModel = importViewModel;
         _categoriesViewModel = categoriesViewModel;
+        _contasViewModel = contasViewModel;
         _dashboardViewModel = dashboardViewModel;
         _parcelamentosViewModel = parcelamentosViewModel;
+        _transacoesViewModel = transacoesViewModel;
 
         InvestmentsViewControl.DataContext = investmentsViewModel;
         ImportTransactionsViewControl.DataContext = importViewModel;
         CategoriesViewControl.DataContext = categoriesViewModel;
+        ContasViewControl.DataContext = contasViewModel;
         DashboardViewControl.DataContext = dashboardViewModel;
         ParcelamentosViewControl.DataContext = parcelamentosViewModel;
+        TransacoesViewControl.DataContext = transacoesViewModel;
 
         // Load default dashboard on startup (review-002 issue 003: guard against double-load)
         Loaded += async (s, e) =>
@@ -73,18 +82,26 @@ public partial class MainWindow : Window
                         await _dashboardViewModel.LoadDashboardCommand.ExecuteAsync(null);
                     break;
                 case 1:
+                    if (_transacoesViewModel.LoadTransacoesCommand.CanExecute(null))
+                        await _transacoesViewModel.LoadTransacoesCommand.ExecuteAsync(null);
+                    break;
+                case 2:
                     if (_categoriesViewModel.LoadCategoriesCommand.CanExecute(null))
                         await _categoriesViewModel.LoadCategoriesCommand.ExecuteAsync(null);
                     break;
-                case 2:
-                    if (_importViewModel.LoadCategoriesCommand.CanExecute(null))
-                        await _importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
-                    break;
                 case 3:
+                    if (_contasViewModel.LoadContasCommand.CanExecute(null))
+                        await _contasViewModel.LoadContasCommand.ExecuteAsync(null);
+                    break;
+                case 4:
+                    if (_importViewModel.LoadInitialDataCommand.CanExecute(null))
+                        await _importViewModel.LoadInitialDataCommand.ExecuteAsync(null);
+                    break;
+                case 5:
                     if (_parcelamentosViewModel.LoadParcelamentosCommand.CanExecute(null))
                         await _parcelamentosViewModel.LoadParcelamentosCommand.ExecuteAsync(null);
                     break;
-                case 4:
+                case 6:
                     if (_investmentsViewModel.LoadInvestmentsCommand.CanExecute(null))
                         await _investmentsViewModel.LoadInvestmentsCommand.ExecuteAsync(null);
                     break;
@@ -101,5 +118,10 @@ public partial class MainWindow : Window
             FileName = logsPath,
             UseShellExecute = true
         });
+    }
+
+    private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+        App.ToggleTheme();
     }
 }

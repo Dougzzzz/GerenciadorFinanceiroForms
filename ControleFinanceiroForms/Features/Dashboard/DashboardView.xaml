@@ -6,13 +6,13 @@
              xmlns:local="clr-namespace:ControleFinanceiroForms.Features.Dashboard"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800"
-             Background="#ffffff">
+             Background="Transparent">
 
     <UserControl.Resources>
         <!-- Estilo para os Cards de Resumo -->
         <Style TargetType="Border" x:Key="CardStyle">
-            <Setter Property="Background" Value="#ffffff"/>
-            <Setter Property="BorderBrush" Value="#dedee5"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16"/>
@@ -52,10 +52,19 @@
         <!-- Título e Subtítulo -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="Dashboard" 
-                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                       FontSize="36" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" 
                        Margin="0,0,0,4"/>
             <TextBlock Text="Acompanhamento passivo dos seus gastos e metas mensais do mês corrente." 
-                       FontSize="16" Foreground="#686b82"/>
+                       FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}"/>
+            
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <TextBlock Text="Filtrar por Conta:" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,8,0" />
+                <ComboBox ItemsSource="{Binding AvailableContas}" 
+                          SelectedItem="{Binding SelectedConta}"
+                          DisplayMemberPath="Name"
+                          Width="200" Padding="8" FontSize="14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                          Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource SurfaceBrush}"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Cards Superiores de Resumo -->
@@ -69,23 +78,23 @@
             <!-- Card: Total Orçado -->
             <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="TOTAL ORÇADO" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
-                    <TextBlock Text="{Binding TotalBudget, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="#101114"/>
+                    <TextBlock Text="TOTAL ORÇADO" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding TotalBudget, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
                 </StackPanel>
             </Border>
 
             <!-- Card: Total Realizado -->
             <Border Grid.Column="1" Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="TOTAL GASTO" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
-                    <TextBlock Text="{Binding TotalSpent, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="#101114"/>
+                    <TextBlock Text="TOTAL GASTO" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding TotalSpent, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
                 </StackPanel>
             </Border>
 
             <!-- Card: Saldo Restante -->
             <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="SALDO RESTANTE" FontSize="12" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,8"/>
+                    <TextBlock Text="SALDO RESTANTE" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding RemainingBudget, StringFormat=R$ \{0:N2\}}" FontSize="24" FontWeight="Bold" 
                                Foreground="{Binding IsGeneralOverBudget, Converter={StaticResource StatusColorConverter}}"/>
                 </StackPanel>
@@ -100,8 +109,8 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0" Margin="0,0,0,8">
-                    <TextBlock Text="Progresso Orçamentário Geral" FontSize="16" FontWeight="Bold" Foreground="#101114" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding GeneralProgress, StringFormat=\{0:F0\}%}" FontSize="16" FontWeight="Bold" Foreground="#7132f5" HorizontalAlignment="Right"/>
+                    <TextBlock Text="Progresso Orçamentário Geral" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding GeneralProgress, StringFormat=\{0:F0\}%}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Right"/>
                 </Grid>
                 <ProgressBar Grid.Row="1" Value="{Binding GeneralProgress}" 
                              Foreground="{Binding IsGeneralOverBudget, Converter={StaticResource StatusColorConverter}}"
@@ -116,13 +125,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <TextBlock Grid.Row="0" Text="Limites por Categoria" FontSize="20" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+            <TextBlock Grid.Row="0" Text="Limites por Categoria" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding DashboardItems}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#dedee5" BorderThickness="0,0,0,1" Padding="0,16" Margin="0,0,16,0">
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,16" Margin="0,0,16,0">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -134,10 +143,10 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Nome da Categoria -->
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="16" FontWeight="SemiBold" Foreground="#101114" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,6"/>
 
                                     <!-- Progresso do Gasto -->
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FormattedProgress}" FontSize="14" Foreground="#686b82" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FormattedProgress}" FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="0,0,0,6"/>
 
                                     <!-- Barra de Progresso da Categoria -->
                                     <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
@@ -159,48 +168,18 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Transações Recentes" FontSize="20" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+            <TextBlock Grid.Row="0" Text="Transações Recentes" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
 
-            <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
-                <TabControl.Resources>
-                    <Style TargetType="TabItem">
-                        <Setter Property="FontSize" Value="16"/>
-                        <Setter Property="Padding" Value="16,8"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
-                        <Setter Property="BorderBrush" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="#686b82"/>
-                        <Setter Property="Cursor" Value="Hand"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Foreground" Value="#7132f5"/>
-                                <Setter Property="BorderBrush" Value="#7132f5"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </TabControl.Resources>
-                <TabItem Header="Conta Corrente">
-                    <DataGrid ItemsSource="{Binding CheckingTransactions}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,16,0,0"
-                              Background="White" BorderBrush="#dedee5" BorderThickness="1" HeadersVisibility="Column">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100"/>
-                            <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*"/>
-                            <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </TabItem>
-                <TabItem Header="Cartão de Crédito">
-                    <DataGrid ItemsSource="{Binding CreditTransactions}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,16,0,0"
-                              Background="White" BorderBrush="#dedee5" BorderThickness="1" HeadersVisibility="Column">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100"/>
-                            <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*"/>
-                            <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </TabItem>
-            </TabControl>
+            <DataGrid Grid.Row="1" ItemsSource="{Binding RecentTransactions}" AutoGenerateColumns="False" IsReadOnly="True" 
+                      Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HeadersVisibility="Column"
+                      Foreground="{DynamicResource PrimaryTextBrush}" RowBackground="{DynamicResource SurfaceBrush}" AlternatingRowBackground="{DynamicResource AppBackgroundBrush}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100"/>
+                    <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*"/>
+                    <DataGridTextColumn Header="Conta" Binding="{Binding Conta.Name}" Width="150"/>
+                    <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
         </Grid>
     </Grid>
 </UserControl>

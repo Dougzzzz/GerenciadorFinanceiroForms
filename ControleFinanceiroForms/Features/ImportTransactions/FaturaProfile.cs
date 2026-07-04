@@ -14,7 +14,7 @@ public class FaturaProfile : ICsvProfile
 
     public char GetSeparator(string headerLine) => ';';
 
-    public Transacao ParseLine(string[] columns, AccountType accountType)
+    public Transacao ParseLine(string[] columns, Guid contaId)
     {
         if (columns.Length < 9) throw new FormatException("Invalid column length for FaturaProfile");
 
@@ -29,7 +29,7 @@ public class FaturaProfile : ICsvProfile
         if (amount > 0)
             amount = -amount;
 
-        return Transacao.Create(date, description, amount, null, accountType);
+        return Transacao.Create(date, description, amount, null, contaId);
     }
 
     private decimal ParseMonetary(string amountStr)

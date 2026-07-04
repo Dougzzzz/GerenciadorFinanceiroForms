@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO;
 using ControleFinanceiroForms.Data.Entities;
 
@@ -6,12 +5,23 @@ namespace ControleFinanceiroForms.Features.ImportTransactions;
 
 public interface ICsvParserService
 {
-    Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream);
+    Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking);
 }
 
 public class CsvParserService : ICsvParserService
 {
-    public async Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream)
+    private readonly IEnumerable<ICsvProfile> _profiles;
+
+    public CsvParserService()
+    {
+        _profiles = new List<ICsvProfile>
+        {
+            new FaturaProfile(),
+            new DefaultProfile()
+        };
+    }
+
+    public async Task<IEnumerable<Transacao>> ParseCsvAsync(Stream stream, AccountType accountType = AccountType.Checking)
     {
         var transactions = new List<Transacao>();
         using var reader = new StreamReader(stream);
@@ -22,8 +32,13 @@ public class CsvParserService : ICsvParserService
             return transactions;
         }
 
-        // Determine separator based on header
-        char separator = headerLine.Contains(';') ? ';' : ',';
+        var profile = _profiles.FirstOrDefault(p => p.CanHandle(headerLine));
+        if (profile == null)
+        {
+            profile = new DefaultProfile(); 
+        }
+
+        char separator = profile.GetSeparator(headerLine);
 
         while (!reader.EndOfStream)
         {
@@ -31,41 +46,15 @@ public class CsvParserService : ICsvParserService
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             var values = line.Split(separator);
-            if (values.Length < 3) continue;
 
             try
             {
-                // Simple heuristic parsing
-                // Try different date formats
-                string[] dateFormats = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" };
-                DateTime date = DateTime.ParseExact(values[0].Trim(), dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None);
-                
-                string description = values[1].Trim();
-                
-                // Try different number formats (comma vs dot)
-                string amountStr = values[2].Trim();
-                decimal amount;
-                int lastComma = amountStr.LastIndexOf(',');
-                int lastDot = amountStr.LastIndexOf('.');
-                
-                if (lastComma > lastDot)
-                {
-                    // Comma is the decimal separator (e.g., pt-BR)
-                    amount = decimal.Parse(amountStr, NumberStyles.Any, new CultureInfo("pt-BR"));
-                }
-                else
-                {
-                    // Dot is the decimal separator (or no separator) (Invariant)
-                    amount = decimal.Parse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture);
-                }
-
-                var tx = Transacao.Create(date, description, amount);
+                var tx = profile.ParseLine(values, accountType);
                 transactions.Add(tx);
             }
             catch (Exception)
             {
-                // Skip lines that don't match expected format (review-002 issue 007).
-                // Matches PdfParserService behavior — graceful degradation.
+                // Skip lines that don't match expected format
                 continue;
             }
         }

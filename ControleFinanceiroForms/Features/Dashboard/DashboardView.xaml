@@ -46,6 +46,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Título e Subtítulo -->
@@ -149,6 +150,57 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+        </Grid>
+
+        <!-- Transações Recentes -->
+        <Grid Grid.Row="4" Margin="0,24,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Transações Recentes" FontSize="20" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,12"/>
+
+            <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="Padding" Value="16,8"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="#686b82"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="#7132f5"/>
+                                <Setter Property="BorderBrush" Value="#7132f5"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.Resources>
+                <TabItem Header="Conta Corrente">
+                    <DataGrid ItemsSource="{Binding CheckingTransactions}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,16,0,0"
+                              Background="White" BorderBrush="#dedee5" BorderThickness="1" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100"/>
+                            <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*"/>
+                            <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+                <TabItem Header="Cartão de Crédito">
+                    <DataGrid ItemsSource="{Binding CreditTransactions}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,16,0,0"
+                              Background="White" BorderBrush="#dedee5" BorderThickness="1" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Data" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="100"/>
+                            <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="*"/>
+                            <DataGridTextColumn Header="Valor" Binding="{Binding Amount, StringFormat=C}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+            </TabControl>
         </Grid>
     </Grid>
 </UserControl>

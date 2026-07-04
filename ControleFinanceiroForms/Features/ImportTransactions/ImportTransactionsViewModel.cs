@@ -21,6 +21,11 @@ public partial class ImportTransactionsViewModel : ObservableObject
     [ObservableProperty]
     private Categoria? _selectedCategory;
 
+    public IReadOnlyList<AccountType> AvailableAccountTypes { get; } = Enum.GetValues<AccountType>();
+
+    [ObservableProperty]
+    private AccountType _selectedAccountType = AccountType.Checking;
+
     [ObservableProperty]
     private string? _statusMessage;
 
@@ -71,7 +76,7 @@ public partial class ImportTransactionsViewModel : ObservableObject
             }
             else
             {
-                parsedTransactions = await _parserService.ParseCsvAsync(stream);
+                parsedTransactions = await _parserService.ParseCsvAsync(stream, SelectedAccountType);
             }
 
             var parsedTransactionsList = parsedTransactions.ToList();

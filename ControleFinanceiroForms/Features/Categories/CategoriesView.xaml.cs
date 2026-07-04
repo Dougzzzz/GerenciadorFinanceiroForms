@@ -16,8 +16,13 @@ public partial class CategoriesView : UserControl
         if (DataContext is not CategoriesViewModel vm) return;
         if (e.Row.Item is not Categoria categoria) return;
 
-        // Commit the edit to the binding source before persisting
-        (sender as DataGrid)?.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: false);
+        var grid = sender as DataGrid;
+        if (grid != null)
+        {
+            grid.RowEditEnding -= DataGrid_RowEditEnding;
+            grid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: false);
+            grid.RowEditEnding += DataGrid_RowEditEnding;
+        }
 
         if (vm.UpdateCategoryCommand.CanExecute(categoria))
             await vm.UpdateCategoryCommand.ExecuteAsync(categoria);

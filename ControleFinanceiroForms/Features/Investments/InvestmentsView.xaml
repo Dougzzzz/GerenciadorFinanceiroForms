@@ -51,6 +51,11 @@
                             <entities:OperacaoInvestimento>Retirada</entities:OperacaoInvestimento>
                         </x:Array>
                     </ComboBox.ItemsSource>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource EnumTranslationConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
 
@@ -94,7 +99,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Data do Registro" Binding="{Binding RecordedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130" IsReadOnly="True" />
                 <DataGridTextColumn Header="Valor" Binding="{Binding TotalValue, StringFormat=C}" Width="110" IsReadOnly="True" />
-                <DataGridTextColumn Header="Operação" Binding="{Binding TipoOperacao}" Width="110" IsReadOnly="True" />
+                <DataGridTextColumn Header="Operação" Binding="{Binding TipoOperacao, Converter={StaticResource EnumTranslationConverter}}" Width="110" IsReadOnly="True" />
                 <DataGridTextColumn Header="Conta" Binding="{Binding Conta}" Width="130" IsReadOnly="True" />
                 <DataGridTextColumn Header="Tipo" Binding="{Binding TipoInvestimento}" Width="130" IsReadOnly="True" />
                 <DataGridTextColumn Header="Nota" Binding="{Binding Note}" Width="*" IsReadOnly="True" />

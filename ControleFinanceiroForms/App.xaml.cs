@@ -1,4 +1,5 @@
 using System.IO;
+using System.Globalization;
 using System.Windows;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -112,6 +113,14 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // ── Global culture settings ─────────────────────────────────
+        var culture = new CultureInfo("pt-BR");
+        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+        FrameworkElement.LanguageProperty.OverrideMetadata(
+            typeof(FrameworkElement),
+            new FrameworkPropertyMetadata(System.Windows.Markup.XmlLanguage.GetLanguage(culture.IetfLanguageTag)));
+
         // ── Global exception handlers ─────────────────────────────────
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {

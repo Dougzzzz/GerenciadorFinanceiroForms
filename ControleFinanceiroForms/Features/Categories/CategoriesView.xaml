@@ -32,17 +32,17 @@
             
             <StackPanel Grid.Column="0" Margin="0,0,16,0">
                 <TextBlock Text="Nome da Categoria" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
-                <TextBox Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}" 
+                <TextBox AutomationProperties.AutomationId="TxtNovaCategoriaNome" Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}" 
                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Margin="0,0,16,0">
                 <TextBlock Text="Limite (Opcional)" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
-                <TextBox Text="{Binding NewCategoryBudget}" 
+                <TextBox AutomationProperties.AutomationId="TxtNovaCategoriaLimite" Text="{Binding NewCategoryBudget}" 
                          Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
             </StackPanel>
             
-            <Button Grid.Column="2" Content="Adicionar" VerticalAlignment="Bottom"
+            <Button Grid.Column="2" AutomationProperties.AutomationId="BtnAdicionarCategoria" Content="Adicionar" VerticalAlignment="Bottom"
                     Command="{Binding AddCategoryCommand}"
                     Background="#7132f5" Foreground="#ffffff" 
                     FontSize="16" FontWeight="SemiBold" 
@@ -57,7 +57,7 @@
         
         <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="#e02020" FontSize="14" Margin="0,70,0,0" VerticalAlignment="Bottom" />
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Categories}" AutoGenerateColumns="False" 
+        <DataGrid Grid.Row="2" AutomationProperties.AutomationId="DgCategorias" ItemsSource="{Binding Categories}" AutoGenerateColumns="False" 
                   CanUserAddRows="False" CanUserDeleteRows="False" Background="#ffffff" BorderBrush="#dedee5" 
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5"

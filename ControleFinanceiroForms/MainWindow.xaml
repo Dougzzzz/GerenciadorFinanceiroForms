@@ -19,23 +19,23 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Row="0" SelectionChanged="TabControl_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="10">
-            <TabItem Header="Dashboard" FontSize="16">
+        <TabControl Grid.Row="0" SelectionChanged="TabControl_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="10" AutomationProperties.AutomationId="MainTabControl">
+            <TabItem AutomationProperties.AutomationId="TabDashboard" Header="Dashboard" FontSize="16">
                 <dashboard:DashboardView x:Name="DashboardViewControl" />
             </TabItem>
-            <TabItem Header="Categorias" FontSize="16">
+            <TabItem AutomationProperties.AutomationId="TabCategorias" Header="Categorias" FontSize="16">
                 <categories:CategoriesView x:Name="CategoriesViewControl" />
             </TabItem>
-            <TabItem Header="Transações" FontSize="16">
+            <TabItem AutomationProperties.AutomationId="TabTransacoes" Header="Transações" FontSize="16">
                 <transacoes:TransacoesView x:Name="TransacoesViewControl" />
             </TabItem>
-            <TabItem Header="Importar Transa&#231;&#245;es" FontSize="16">
+            <TabItem AutomationProperties.AutomationId="TabImportar" Header="Importar Transações" FontSize="16">
                 <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />
             </TabItem>
-            <TabItem Header="Parcelamentos" FontSize="16">
+            <TabItem AutomationProperties.AutomationId="TabParcelamentos" Header="Parcelamentos" FontSize="16">
                 <parc:ParcelamentosView x:Name="ParcelamentosViewControl" />
             </TabItem>
-            <TabItem Header="Meus Investimentos" FontSize="16">
+            <TabItem AutomationProperties.AutomationId="TabInvestimentos" Header="Meus Investimentos" FontSize="16">
                 <inv:InvestmentsView x:Name="InvestmentsViewControl" />
             </TabItem>
         </TabControl>

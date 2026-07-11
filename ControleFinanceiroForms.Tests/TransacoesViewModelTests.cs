@@ -144,6 +144,91 @@ public class TransacoesViewModelTests
     }
 
     // ─────────────────────────────────────────────────────────────
+    // Task 03: Add Transaction Modal Logic
+    // ─────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void OpenAddModalCommand_SetsModalStateAndClearsFields()
+    {
+        // Act
+        _viewModel.OpenAddModalCommand.Execute(null);
+
+        // Assert
+        Assert.IsTrue(_viewModel.IsAddModalOpen);
+        Assert.AreEqual(string.Empty, _viewModel.NewTransacaoDescricao);
+        Assert.AreEqual(0m, _viewModel.NewTransacaoValor);
+        Assert.AreEqual(DateTime.Today, _viewModel.NewTransacaoData);
+        Assert.AreEqual(TipoTransacao.Despesa, _viewModel.NewTransacaoTipo);
+        Assert.IsNull(_viewModel.NewTransacaoCategoriaId);
+        Assert.IsNull(_viewModel.ErrorMessage);
+    }
+
+    [TestMethod]
+    public void CloseAddModalCommand_ClosesModal()
+    {
+        // Arrange
+        _viewModel.IsAddModalOpen = true;
+
+        // Act
+        _viewModel.CloseAddModalCommand.Execute(null);
+
+        // Assert
+        Assert.IsFalse(_viewModel.IsAddModalOpen);
+    }
+
+    [TestMethod]
+    public async Task AddTransacaoCommand_WithValidInput_AddsToRepositoryAndRefreshes()
+    {
+        // Arrange
+        _viewModel.NewTransacaoDescricao = "Supermercado";
+        _viewModel.NewTransacaoValor = 150m;
+        _viewModel.NewTransacaoData = DateTime.Today;
+        _viewModel.NewTransacaoTipo = TipoTransacao.Despesa;
+
+        // Act
+        await _viewModel.AddTransacaoCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.IsFalse(_viewModel.IsAddModalOpen);
+        Assert.IsNull(_viewModel.ErrorMessage);
+        Assert.AreEqual(1, _transactionRepo.Count);
+        // Ensure it refreshed the grid
+        Assert.AreEqual(1, _viewModel.Transacoes.Count);
+        Assert.AreEqual("Supermercado", _viewModel.Transacoes[0].Description);
+        Assert.AreEqual(-150m, _viewModel.Transacoes[0].Amount);
+    }
+
+    [TestMethod]
+    public async Task AddTransacaoCommand_WithEmptyDescription_SetsError()
+    {
+        // Arrange
+        _viewModel.NewTransacaoDescricao = "";
+        _viewModel.NewTransacaoValor = 100m;
+
+        // Act
+        await _viewModel.AddTransacaoCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.IsNotNull(_viewModel.ErrorMessage);
+        Assert.AreEqual(0, _transactionRepo.Count);
+    }
+
+    [TestMethod]
+    public async Task AddTransacaoCommand_WithZeroAmount_SetsError()
+    {
+        // Arrange
+        _viewModel.NewTransacaoDescricao = "Teste";
+        _viewModel.NewTransacaoValor = 0m;
+
+        // Act
+        await _viewModel.AddTransacaoCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.IsNotNull(_viewModel.ErrorMessage);
+        Assert.AreEqual(0, _transactionRepo.Count);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // Test helper — faulty repository for error path
     // ─────────────────────────────────────────────────────────────
 

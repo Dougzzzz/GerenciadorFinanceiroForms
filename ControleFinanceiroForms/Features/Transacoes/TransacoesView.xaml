@@ -4,9 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ControleFinanceiroForms.Features.Transacoes"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1024"
              Background="#ffffff">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <ObjectDataProvider x:Key="TipoTransacaoEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:TipoTransacao"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </UserControl.Resources>
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -33,13 +43,24 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Content="+ Nova Transação" Command="{Binding OpenAddModalCommand}"
+                        AutomationProperties.AutomationId="BtnNovaTransacao"
+                        Background="#101114" Foreground="#ffffff" FontWeight="SemiBold"
+                        Padding="16,8" BorderThickness="0" Cursor="Hand" Margin="0,0,24,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
                 <TextBlock Text="De:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
-                <DatePicker SelectedDate="{Binding StartDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                <DatePicker AutomationProperties.AutomationId="DpStartDate" SelectedDate="{Binding StartDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
                 
                 <TextBlock Text="Até:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
-                <DatePicker SelectedDate="{Binding EndDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                <DatePicker AutomationProperties.AutomationId="DpEndDate" SelectedDate="{Binding EndDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
                 
-                <Button Content="Filtrar" Command="{Binding LoadTransacoesCommand}"
+                <Button AutomationProperties.AutomationId="BtnFiltrarTransacoes" Content="Filtrar" Command="{Binding LoadTransacoesCommand}"
                         Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold"
                         Padding="16,8" BorderThickness="0" Cursor="Hand">
                     <Button.Resources>
@@ -55,7 +76,7 @@
         <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="#e02020" FontSize="14" Margin="0,0,0,8" />
 
         <!-- Grid de Transações -->
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Transacoes}" AutoGenerateColumns="False" 
+        <DataGrid Grid.Row="3" AutomationProperties.AutomationId="DgTransacoes" ItemsSource="{Binding Transacoes}" AutoGenerateColumns="False" 
                   CanUserAddRows="False" CanUserDeleteRows="False" Background="#ffffff" BorderBrush="#dedee5" 
                   RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5"
@@ -91,5 +112,58 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!-- Modal Nova Transação -->
+        <Grid Grid.RowSpan="4" Background="#80000000" Visibility="{Binding IsAddModalOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="#ffffff" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="12" Padding="24">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="20" ShadowDepth="4"/>
+                </Border.Effect>
+                
+                <StackPanel>
+                    <TextBlock Text="Nova Transação" FontSize="20" FontWeight="Bold" Foreground="#101114" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="Descrição" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,4"/>
+                    <TextBox AutomationProperties.AutomationId="TxtDescricao" Text="{Binding NewTransacaoDescricao, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Valor" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,4"/>
+                    <TextBox AutomationProperties.AutomationId="TxtValor" Text="{Binding NewTransacaoValor, UpdateSourceTrigger=LostFocus, StringFormat=F2}" Padding="8" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Data" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,4"/>
+                    <DatePicker AutomationProperties.AutomationId="DpData" SelectedDate="{Binding NewTransacaoData}" Padding="4" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Tipo" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,4"/>
+                    <ComboBox AutomationProperties.AutomationId="CmbTipo" ItemsSource="{Binding Source={StaticResource TipoTransacaoEnum}}" SelectedItem="{Binding NewTransacaoTipo}" Padding="8" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Categoria" FontWeight="SemiBold" Foreground="#686b82" Margin="0,0,0,4"/>
+                    <ComboBox AutomationProperties.AutomationId="CmbCategoria" ItemsSource="{Binding Categories}" SelectedValuePath="Id" DisplayMemberPath="Name" SelectedValue="{Binding NewTransacaoCategoriaId}" Padding="8" Margin="0,0,0,24" />
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#e02020" FontSize="14" Margin="0,0,0,16" TextWrapping="Wrap" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" AutomationProperties.AutomationId="BtnCancelarTransacao" Content="Cancelar" Command="{Binding CloseAddModalCommand}"
+                                Background="#f0f0f5" Foreground="#101114" FontWeight="SemiBold" Padding="0,10" BorderThickness="0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <Button Grid.Column="2" AutomationProperties.AutomationId="BtnSalvarTransacao" Content="Salvar" Command="{Binding AddTransacaoCommand}"
+                                Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold" Padding="0,10" BorderThickness="0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style>
+                            </Button.Resources>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </UserControl>

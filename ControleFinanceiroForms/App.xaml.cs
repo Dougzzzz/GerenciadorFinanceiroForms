@@ -66,11 +66,8 @@ public partial class App : Application
             .ConfigureServices((context, services) =>
             {
                 // ── Database ───────────────────────────────────────────────
-                var dbFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "ControleFinanceiro");
-                Directory.CreateDirectory(dbFolder);
-                var dbPath = Path.Combine(dbFolder, "controle-financeiro.db");
+                var args = Environment.GetCommandLineArgs();
+                var dbPath = DbConfigurator.GetDatabasePath(args);
 
                 services.AddDbContext<AppDbContext>((serviceProvider, options) =>
                 {

@@ -85,6 +85,17 @@ public sealed class FakeTransactionRepository : ITransactionRepository
         return Task.FromResult<IEnumerable<Transacao>>(filtered);
     }
 
+    public Task<IEnumerable<Transacao>> GetByDateRangeAsync(DateTime start, DateTime end)
+    {
+        var startDate = start.Date;
+        var endDate = end.Date;
+
+        var filtered = _store
+            .Where(t => t.Date >= startDate && t.Date <= endDate)
+            .ToList();
+        return Task.FromResult<IEnumerable<Transacao>>(filtered);
+    }
+
     // ── Test-helper properties ──────────────────────────────────────
     public int Count => _store.Count;
     public IReadOnlyList<Transacao> All => _store.AsReadOnly();

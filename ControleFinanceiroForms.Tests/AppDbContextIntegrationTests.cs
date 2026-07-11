@@ -443,4 +443,271 @@ public sealed class AppDbContextIntegrationTests
         Assert.IsNull(retrievedParcelamento);
         Assert.AreEqual(0, retrievedPagamentos.Count(), "Pagamentos should be cascade deleted by EF.");
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Bug 4 (Delete transaction FK constraint)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Deleting a transaction that references a category must succeed
+    /// without throwing a FOREIGN KEY constraint error.
+    /// Regression guard for SQLite FK constraint on transaction delete.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteTransacao_WithCategoria_DoesNotThrowFKConstraint()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var txRepo = new TransactionRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Transporte" };
+        await context.Categorias.AddAsync(categoria);
+        await context.SaveChangesAsync();
+
+        var tx = Transacao.Create(DateTime.Today, "Uber", -25.00m, categoria.Id);
+        await txRepo.AddAsync(tx);
+
+        // Act — should NOT throw FK constraint
+        await txRepo.DeleteAsync(tx.Id);
+
+        // Assert
+        var retrieved = await txRepo.GetByIdAsync(tx.Id);
+        Assert.IsNull(retrieved, "Transaction should be deleted successfully.");
+
+        // Category should still exist
+        var cat = await context.Categorias.FindAsync(categoria.Id);
+        Assert.IsNotNull(cat, "Category should not be affected by transaction deletion.");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Bug 2 (Delete category with linked transactions)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Deleting a category that has linked transactions must set their
+    /// CategoryId to null (dissociate) and succeed without FK errors.
+    /// Regression guard for the category delete bug.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteCategoria_WithLinkedTransactions_SetsTransactionCategoryIdToNull()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var catRepo = new CategoryRepository(context);
+        var txRepo = new TransactionRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Alimentação" };
+        await catRepo.AddAsync(categoria);
+
+        var tx1 = Transacao.Create(DateTime.Today, "Supermercado", -100.00m, categoria.Id);
+        var tx2 = Transacao.Create(DateTime.Today, "Restaurante", -50.00m, categoria.Id);
+        await txRepo.AddAsync(tx1);
+        await txRepo.AddAsync(tx2);
+
+        // Act — should NOT throw FK constraint
+        await catRepo.DeleteAsync(categoria.Id);
+
+        // Assert
+        var retrievedCat = await catRepo.GetByIdAsync(categoria.Id);
+        Assert.IsNull(retrievedCat, "Category should be deleted.");
+
+        // Transactions should still exist with null CategoryId
+        var remainingTx1 = await txRepo.GetByIdAsync(tx1.Id);
+        var remainingTx2 = await txRepo.GetByIdAsync(tx2.Id);
+        Assert.IsNotNull(remainingTx1, "Transaction 1 should still exist.");
+        Assert.IsNotNull(remainingTx2, "Transaction 2 should still exist.");
+        Assert.IsNull(remainingTx1.CategoryId, "Transaction 1 CategoryId should be null after category deletion.");
+        Assert.IsNull(remainingTx2.CategoryId, "Transaction 2 CategoryId should be null after category deletion.");
+    }
+
+    /// <summary>
+    /// Deleting a category that has linked MetasGasto must cascade-delete
+    /// the MetasGasto records and succeed without FK errors.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteCategoria_WithLinkedMetasGasto_CascadeDeletes()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var catRepo = new CategoryRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Lazer" };
+        await catRepo.AddAsync(categoria);
+
+        var meta = new MetaGasto
+        {
+            Id = Guid.NewGuid(),
+            CategoryId = categoria.Id,
+            Month = 7,
+            Year = 2026,
+            TargetAmount = 300.00m
+        };
+        await context.MetasGasto.AddAsync(meta);
+        await context.SaveChangesAsync();
+
+        // Act
+        await catRepo.DeleteAsync(categoria.Id);
+
+        // Assert
+        var retrievedCat = await catRepo.GetByIdAsync(categoria.Id);
+        Assert.IsNull(retrievedCat, "Category should be deleted.");
+
+        var retrievedMeta = await context.MetasGasto.FindAsync(meta.Id);
+        Assert.IsNull(retrievedMeta, "MetaGasto should be cascade-deleted.");
+    }
+    // ─────────────────────────────────────────────────────────────
+    // Coverage improvement tests
+    // ─────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public async Task CategoryRepository_GetAllAsync_ReturnsAllCategories()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new CategoryRepository(context);
+        await repo.AddAsync(new Categoria { Id = Guid.NewGuid(), Name = "Cat1" });
+        await repo.AddAsync(new Categoria { Id = Guid.NewGuid(), Name = "Cat2" });
+
+        var categories = await repo.GetAllAsync();
+        Assert.AreEqual(2, categories.Count());
+    }
+
+    [TestMethod]
+    public async Task CategoryRepository_UpdateAsync_ModifiesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new CategoryRepository(context);
+        var cat = new Categoria { Id = Guid.NewGuid(), Name = "OldName" };
+        await repo.AddAsync(cat);
+
+        cat.Name = "NewName";
+        await repo.UpdateAsync(cat);
+
+        var retrieved = await repo.GetByIdAsync(cat.Id);
+        Assert.AreEqual("NewName", retrieved?.Name);
+    }
+
+    [TestMethod]
+    public async Task InvestmentRepository_GetAllAsync_ReturnsAllInvestments()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        await repo.AddAsync(new Investimento { Id = Guid.NewGuid(), TotalValue = 100, TipoInvestimento = "A" });
+        await repo.AddAsync(new Investimento { Id = Guid.NewGuid(), TotalValue = 200, TipoInvestimento = "B" });
+
+        var investments = await repo.GetAllAsync();
+        Assert.AreEqual(2, investments.Count());
+    }
+
+    [TestMethod]
+    public async Task InvestmentRepository_DeleteAsync_RemovesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        var inv = new Investimento { Id = Guid.NewGuid(), TotalValue = 100 };
+        await repo.AddAsync(inv);
+
+        await repo.DeleteAsync(inv.Id);
+
+        var retrieved = await repo.GetByIdAsync(inv.Id);
+        Assert.IsNull(retrieved);
+    }
+
+    [TestMethod]
+    public async Task ParcelamentoRepository_GetAllAsync_ReturnsAll()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new ParcelamentoRepository(context);
+        await repo.AddAsync(new Parcelamento { Id = Guid.NewGuid(), Descricao = "P1", DataInicio = DateTime.Today });
+        await repo.AddAsync(new Parcelamento { Id = Guid.NewGuid(), Descricao = "P2", DataInicio = DateTime.Today });
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetAllAsync_ReturnsAll()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        await repo.AddAsync(Transacao.Create(DateTime.Today, "T1", 10));
+        await repo.AddAsync(Transacao.Create(DateTime.Today, "T2", 20));
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_AddRangeAsync_AddsMultiple()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var batch = new[]
+        {
+            Transacao.Create(DateTime.Today, "B1", 10),
+            Transacao.Create(DateTime.Today, "B2", 20)
+        };
+
+        await repo.AddRangeAsync(batch);
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetByMonthAsync_FiltersCorrectly()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 8, 1), "Aug", 10));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 9, 1), "Sep", 20));
+
+        var results = await repo.GetByMonthAsync(8, 2026);
+        Assert.AreEqual(1, results.Count());
+        Assert.AreEqual("Aug", results.First().Description);
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetByDateRangeAsync_FiltersCorrectly()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 7, 10), "In Range", 10));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 7, 15), "In Range 2", 20));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 8, 1), "Out of Range", 30));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 6, 30), "Out of Range 2", 40));
+
+        var results = await repo.GetByDateRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
+        
+        Assert.AreEqual(2, results.Count());
+        Assert.IsTrue(results.All(t => t.Date.Month == 7));
+    }
+    [TestMethod]
+    public async Task TransactionRepository_GetExistingHashesAsync_ReturnsMatches()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var tx = Transacao.Create(DateTime.Today, "Unique Hash", 10);
+        await repo.AddAsync(tx);
+
+        var results = await repo.GetExistingHashesAsync(new[] { tx.ChaveExclusiva, "NonExistent" });
+        Assert.AreEqual(1, results.Count());
+        Assert.AreEqual(tx.ChaveExclusiva, results.First());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_UpdateAsync_ModifiesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var tx = Transacao.Create(DateTime.Today, "Old Desc", 10);
+        await repo.AddAsync(tx);
+
+        tx.Description = "New Desc";
+        await repo.UpdateAsync(tx);
+
+        var retrieved = await repo.GetByIdAsync(tx.Id);
+        Assert.AreEqual("New Desc", retrieved?.Description);
+    }
 }
+

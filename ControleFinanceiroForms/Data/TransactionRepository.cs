@@ -14,7 +14,9 @@ public class TransactionRepository : ITransactionRepository
 
     public async Task<IEnumerable<Transacao>> GetAllAsync()
     {
-        return await _context.Transacoes.ToListAsync();
+        return await _context.Transacoes
+            .Include(t => t.Categoria)
+            .ToListAsync();
     }
 
     public async Task<Transacao?> GetByIdAsync(Guid id)
@@ -45,7 +47,8 @@ public class TransactionRepository : ITransactionRepository
         var transaction = await _context.Transacoes.FindAsync(id);
         if (transaction != null)
         {
-            _context.Transacoes.Remove(transaction);
+            // Issue 001 fix: direct DELETE without extra UPDATE
+            _context.Entry(transaction).State = EntityState.Deleted;
             await _context.SaveChangesAsync();
         }
     }
@@ -62,7 +65,21 @@ public class TransactionRepository : ITransactionRepository
     public async Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year)
     {
         return await _context.Transacoes
+            .Include(t => t.Categoria)
             .Where(t => t.Date.Month == month && t.Date.Year == year)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Transacao>> GetByDateRangeAsync(DateTime start, DateTime end)
+    {
+        // Extract Date parts to ignore time components when comparing
+        var startDate = start.Date;
+        var endDate = end.Date;
+        
+        return await _context.Transacoes
+            .Include(t => t.Categoria)
+            .Where(t => t.Date >= startDate && t.Date <= endDate)
+            .ToListAsync();
+    }
 }
+

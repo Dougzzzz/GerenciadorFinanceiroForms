@@ -210,7 +210,10 @@ public partial class ParcelamentosViewModel : ObservableObject
         try
         {
             await _pagamentoRepository.AddAsync(pg);
-            SelectedParcelamento.Model.Pagamentos.Add(pg);
+            if (!SelectedParcelamento.Model.Pagamentos.Contains(pg))
+            {
+                SelectedParcelamento.Model.Pagamentos.Add(pg);
+            }
             SelectedParcelamentoPagamentos.Add(pg);
             SelectedParcelamento.NotifyCalculatedPropertiesChanged();
 

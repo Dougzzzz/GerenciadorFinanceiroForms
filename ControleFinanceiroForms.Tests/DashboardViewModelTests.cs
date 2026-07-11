@@ -123,4 +123,38 @@ public class DashboardViewModelTests
         Assert.IsTrue(item.IsOverBudget);
         Assert.AreEqual("#e02020", item.StatusColor);
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression: Bug 3 — Dashboard transaction grids must be populated
+    // ─────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public async Task LoadDashboardAsync_PopulatesCreditAndCheckingTransactionCollections()
+    {
+        // Arrange
+        var cat = new Categoria { Id = Guid.NewGuid(), Name = "Geral", BudgetLimit = 1000m };
+        await _categoryRepository.AddAsync(cat);
+
+        var today = DateTime.Today;
+
+        // Checking transaction
+        var txChecking = Transacao.Create(today, "Salário", 5000m, cat.Id, AccountType.Checking);
+        // Credit card transaction
+        var txCredit = Transacao.Create(today, "Compra Online", -200m, cat.Id, AccountType.CreditCard);
+
+        await _transactionRepository.AddAsync(txChecking);
+        await _transactionRepository.AddAsync(txCredit);
+
+        // Act
+        await _viewModel.LoadDashboardAsync();
+
+        // Assert
+        Assert.AreEqual(1, _viewModel.CheckingTransactions.Count,
+            "Checking transactions collection must be populated.");
+        Assert.AreEqual(1, _viewModel.CreditTransactions.Count,
+            "Credit transactions collection must be populated.");
+
+        Assert.AreEqual("Salário", _viewModel.CheckingTransactions[0].Description);
+        Assert.AreEqual("Compra Online", _viewModel.CreditTransactions[0].Description);
+    }
 }

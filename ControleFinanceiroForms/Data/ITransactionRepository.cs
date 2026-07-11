@@ -17,4 +17,5 @@ public interface ITransactionRepository
     Task DeleteAsync(Guid id);
     Task<IEnumerable<string>> GetExistingHashesAsync(IEnumerable<string> hashes);
     Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year);
+    Task<IEnumerable<Transacao>> GetByDateRangeAsync(DateTime start, DateTime end);
 }

@@ -9,6 +9,7 @@
         xmlns:categories="clr-namespace:ControleFinanceiroForms.Features.Categories"
         xmlns:dashboard="clr-namespace:ControleFinanceiroForms.Features.Dashboard"
         xmlns:parc="clr-namespace:ControleFinanceiroForms.Features.Parcelamentos"
+        xmlns:transacoes="clr-namespace:ControleFinanceiroForms.Features.Transacoes"
         mc:Ignorable="d"
         Title="Controle Financeiro" Height="700" Width="1024"
         Background="#f8f8fa">
@@ -24,6 +25,9 @@
             </TabItem>
             <TabItem Header="Categorias" FontSize="16">
                 <categories:CategoriesView x:Name="CategoriesViewControl" />
+            </TabItem>
+            <TabItem Header="Transações" FontSize="16">
+                <transacoes:TransacoesView x:Name="TransacoesViewControl" />
             </TabItem>
             <TabItem Header="Importar Transa&#231;&#245;es" FontSize="16">
                 <import:ImportTransactionsView x:Name="ImportTransactionsViewControl" />

@@ -88,25 +88,25 @@
 
                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                 <TextBlock Text="Descrição" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewDescricao, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox AutomationProperties.AutomationId="TxtNovaDescricaoParcelamento" Text="{Binding NewDescricao, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                 <TextBlock Text="Valor Total" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorTotal}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox AutomationProperties.AutomationId="TxtNovoValorParcelamento" Text="{Binding NewValorTotal}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                 <TextBlock Text="Parcelas" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewNumeroParcelas}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox AutomationProperties.AutomationId="TxtNovoNumeroParcelas" Text="{Binding NewNumeroParcelas}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="3" Margin="0,0,8,0">
                                 <TextBlock Text="Data Início" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <DatePicker SelectedDate="{Binding NewDataInicio}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <DatePicker AutomationProperties.AutomationId="DpNovaDataParcelamento" SelectedDate="{Binding NewDataInicio}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
-                            <Button Grid.Column="4" Content="Adicionar" VerticalAlignment="Bottom"
+                            <Button Grid.Column="4" AutomationProperties.AutomationId="BtnAdicionarParcelamento" Content="Adicionar" VerticalAlignment="Bottom"
                                     Command="{Binding AddParcelamentoCommand}"
                                     Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold" 
                                     Padding="16,8" BorderThickness="0" Cursor="Hand">
@@ -133,7 +133,7 @@
                 </Grid>
 
                 <!-- Tabela de Parcelamentos -->
-                <DataGrid Grid.Row="2" ItemsSource="{Binding VisibleParcelamentos}" SelectedItem="{Binding SelectedParcelamento}" 
+                <DataGrid Grid.Row="2" AutomationProperties.AutomationId="DgParcelamentos" ItemsSource="{Binding VisibleParcelamentos}" SelectedItem="{Binding SelectedParcelamento}" 
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                           Background="#ffffff" BorderBrush="#dedee5" RowBackground="#ffffff" AlternatingRowBackground="#f8f8fa" 
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#dedee5" Cursor="Hand">
@@ -211,20 +211,20 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
                                 <TextBlock Text="Valor Pago" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorPago}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox AutomationProperties.AutomationId="TxtNovoValorPagamento" Text="{Binding NewValorPago}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,8">
                                 <TextBlock Text="Data Pagamento" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <DatePicker SelectedDate="{Binding NewDataPagamento}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <DatePicker AutomationProperties.AutomationId="DpNovaDataPagamento" SelectedDate="{Binding NewDataPagamento}" Padding="3" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,8,0">
                                 <TextBlock Text="Nota (Opcional)" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewPagamentoNota, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox AutomationProperties.AutomationId="TxtNovaNotaPagamento" Text="{Binding NewPagamentoNota, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
-                            <Button Grid.Row="1" Grid.Column="2" Content="Pagar" VerticalAlignment="Bottom"
+                            <Button Grid.Row="1" Grid.Column="2" AutomationProperties.AutomationId="BtnPagarParcelamento" Content="Pagar" VerticalAlignment="Bottom"
                                     Command="{Binding AddPagamentoCommand}"
                                     Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold" 
                                     Padding="24,8" BorderThickness="0" Cursor="Hand">

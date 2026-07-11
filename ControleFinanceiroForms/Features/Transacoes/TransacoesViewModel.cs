@@ -27,6 +27,24 @@ public partial class TransacoesViewModel : ObservableObject
     [ObservableProperty]
     private DateTime _endDate;
 
+    [ObservableProperty]
+    private string _newTransacaoDescricao = string.Empty;
+
+    [ObservableProperty]
+    private decimal _newTransacaoValor;
+
+    [ObservableProperty]
+    private DateTime _newTransacaoData = DateTime.Today;
+
+    [ObservableProperty]
+    private TipoTransacao _newTransacaoTipo = TipoTransacao.Despesa;
+
+    [ObservableProperty]
+    private Guid? _newTransacaoCategoriaId;
+    
+    [ObservableProperty]
+    private bool _isAddModalOpen;
+
     public TransacoesViewModel(
         ITransactionRepository transactionRepository,
         ICategoryRepository categoryRepository)
@@ -99,6 +117,65 @@ public partial class TransacoesViewModel : ObservableObject
         {
             ErrorMessage = $"Erro ao atualizar transação: {ex.Message}";
             await LoadTransacoesAsync();
+        }
+    }
+
+    [RelayCommand]
+    private void OpenAddModal()
+    {
+        ErrorMessage = null;
+        NewTransacaoDescricao = string.Empty;
+        NewTransacaoValor = 0;
+        NewTransacaoData = DateTime.Today;
+        NewTransacaoTipo = TipoTransacao.Despesa;
+        NewTransacaoCategoriaId = null;
+        IsAddModalOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseAddModal()
+    {
+        IsAddModalOpen = false;
+        ErrorMessage = null;
+    }
+
+    [RelayCommand]
+    private async Task AddTransacaoAsync() 
+    {
+        ErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(NewTransacaoDescricao))
+        {
+            ErrorMessage = "A descrição é obrigatória.";
+            return;
+        }
+
+        if (NewTransacaoValor <= 0)
+        {
+            ErrorMessage = "O valor deve ser maior que zero.";
+            return;
+        }
+
+        try
+        {
+            var finalAmount = NewTransacaoTipo == TipoTransacao.Despesa 
+                ? -Math.Abs(NewTransacaoValor) 
+                : Math.Abs(NewTransacaoValor);
+
+            var transacao = Transacao.Create(
+                NewTransacaoData, 
+                NewTransacaoDescricao, 
+                finalAmount, 
+                NewTransacaoCategoriaId);
+
+            await _transactionRepository.AddAsync(transacao);
+
+            IsAddModalOpen = false;
+            await LoadTransacoesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erro ao adicionar transação: {ex.Message}";
         }
     }
 }

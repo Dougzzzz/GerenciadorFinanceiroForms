@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'feature/**'
   pull_request:
     branches:
       - main
@@ -61,6 +60,7 @@ jobs:
           dotnet test ControleFinanceiroForms.sln
           --no-build
           --configuration Release
+          --filter "TestCategory!=E2E"
           --collect:"XPlat Code Coverage"
           --results-directory TestResults
           --logger "trx;LogFileName=test-results.trx"

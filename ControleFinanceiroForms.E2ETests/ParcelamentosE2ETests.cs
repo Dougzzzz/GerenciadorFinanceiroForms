@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ControleFinanceiroForms.E2ETests;
 
 [TestClass]
+[TestCategory("E2E")]
 public class ParcelamentosE2ETests : E2ETestBase
 {
     [TestMethod]

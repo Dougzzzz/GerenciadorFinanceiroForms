@@ -8,6 +8,7 @@ using ControleFinanceiroForms.Features.ImportTransactions;
 using ControleFinanceiroForms.Features.Categories;
 using ControleFinanceiroForms.Features.Dashboard;
 using ControleFinanceiroForms.Features.Parcelamentos;
+using ControleFinanceiroForms.Features.Transacoes;
 
 namespace ControleFinanceiroForms;
 
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
 {
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly CategoriesViewModel _categoriesViewModel;
+    private readonly TransacoesViewModel _transacoesViewModel;
     private readonly ImportTransactionsViewModel _importViewModel;
     private readonly ParcelamentosViewModel _parcelamentosViewModel;
     private readonly InvestmentsViewModel _investmentsViewModel;
@@ -29,7 +31,8 @@ public partial class MainWindow : Window
         ImportTransactionsViewModel importViewModel, 
         CategoriesViewModel categoriesViewModel,
         DashboardViewModel dashboardViewModel,
-        ParcelamentosViewModel parcelamentosViewModel)
+        ParcelamentosViewModel parcelamentosViewModel,
+        TransacoesViewModel transacoesViewModel)
     {
         InitializeComponent();
 
@@ -38,12 +41,14 @@ public partial class MainWindow : Window
         _categoriesViewModel = categoriesViewModel;
         _dashboardViewModel = dashboardViewModel;
         _parcelamentosViewModel = parcelamentosViewModel;
+        _transacoesViewModel = transacoesViewModel;
 
         InvestmentsViewControl.DataContext = investmentsViewModel;
         ImportTransactionsViewControl.DataContext = importViewModel;
         CategoriesViewControl.DataContext = categoriesViewModel;
         DashboardViewControl.DataContext = dashboardViewModel;
         ParcelamentosViewControl.DataContext = parcelamentosViewModel;
+        TransacoesViewControl.DataContext = transacoesViewModel;
 
         // Load default dashboard on startup (review-002 issue 003: guard against double-load)
         Loaded += async (s, e) =>
@@ -64,6 +69,10 @@ public partial class MainWindow : Window
         // Skip events fired during initial render (review-002 issue 003)
         if (!_initialized) return;
 
+        // Only process events from the main TabControl, not from inner
+        // TabControls (e.g., Dashboard's Conta Corrente / Cartão de Crédito).
+        if (e.Source != sender) return;
+
         if (e.Source is TabControl tabControl)
         {
             switch (tabControl.SelectedIndex)
@@ -77,14 +86,18 @@ public partial class MainWindow : Window
                         await _categoriesViewModel.LoadCategoriesCommand.ExecuteAsync(null);
                     break;
                 case 2:
+                    if (_transacoesViewModel.LoadTransacoesCommand.CanExecute(null))
+                        await _transacoesViewModel.LoadTransacoesCommand.ExecuteAsync(null);
+                    break;
+                case 3:
                     if (_importViewModel.LoadCategoriesCommand.CanExecute(null))
                         await _importViewModel.LoadCategoriesCommand.ExecuteAsync(null);
                     break;
-                case 3:
+                case 4:
                     if (_parcelamentosViewModel.LoadParcelamentosCommand.CanExecute(null))
                         await _parcelamentosViewModel.LoadParcelamentosCommand.ExecuteAsync(null);
                     break;
-                case 4:
+                case 5:
                     if (_investmentsViewModel.LoadInvestmentsCommand.CanExecute(null))
                         await _investmentsViewModel.LoadInvestmentsCommand.ExecuteAsync(null);
                     break;

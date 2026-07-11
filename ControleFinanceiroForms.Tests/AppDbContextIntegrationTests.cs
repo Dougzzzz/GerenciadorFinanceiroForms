@@ -443,4 +443,117 @@ public sealed class AppDbContextIntegrationTests
         Assert.IsNull(retrievedParcelamento);
         Assert.AreEqual(0, retrievedPagamentos.Count(), "Pagamentos should be cascade deleted by EF.");
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Bug 4 (Delete transaction FK constraint)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Deleting a transaction that references a category must succeed
+    /// without throwing a FOREIGN KEY constraint error.
+    /// Regression guard for SQLite FK constraint on transaction delete.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteTransacao_WithCategoria_DoesNotThrowFKConstraint()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var txRepo = new TransactionRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Transporte" };
+        await context.Categorias.AddAsync(categoria);
+        await context.SaveChangesAsync();
+
+        var tx = Transacao.Create(DateTime.Today, "Uber", -25.00m, categoria.Id);
+        await txRepo.AddAsync(tx);
+
+        // Act — should NOT throw FK constraint
+        await txRepo.DeleteAsync(tx.Id);
+
+        // Assert
+        var retrieved = await txRepo.GetByIdAsync(tx.Id);
+        Assert.IsNull(retrieved, "Transaction should be deleted successfully.");
+
+        // Category should still exist
+        var cat = await context.Categorias.FindAsync(categoria.Id);
+        Assert.IsNotNull(cat, "Category should not be affected by transaction deletion.");
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Regression tests — Bug 2 (Delete category with linked transactions)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Deleting a category that has linked transactions must set their
+    /// CategoryId to null (dissociate) and succeed without FK errors.
+    /// Regression guard for the category delete bug.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteCategoria_WithLinkedTransactions_SetsTransactionCategoryIdToNull()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var catRepo = new CategoryRepository(context);
+        var txRepo = new TransactionRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Alimentação" };
+        await catRepo.AddAsync(categoria);
+
+        var tx1 = Transacao.Create(DateTime.Today, "Supermercado", -100.00m, categoria.Id);
+        var tx2 = Transacao.Create(DateTime.Today, "Restaurante", -50.00m, categoria.Id);
+        await txRepo.AddAsync(tx1);
+        await txRepo.AddAsync(tx2);
+
+        // Act — should NOT throw FK constraint
+        await catRepo.DeleteAsync(categoria.Id);
+
+        // Assert
+        var retrievedCat = await catRepo.GetByIdAsync(categoria.Id);
+        Assert.IsNull(retrievedCat, "Category should be deleted.");
+
+        // Transactions should still exist with null CategoryId
+        var remainingTx1 = await txRepo.GetByIdAsync(tx1.Id);
+        var remainingTx2 = await txRepo.GetByIdAsync(tx2.Id);
+        Assert.IsNotNull(remainingTx1, "Transaction 1 should still exist.");
+        Assert.IsNotNull(remainingTx2, "Transaction 2 should still exist.");
+        Assert.IsNull(remainingTx1.CategoryId, "Transaction 1 CategoryId should be null after category deletion.");
+        Assert.IsNull(remainingTx2.CategoryId, "Transaction 2 CategoryId should be null after category deletion.");
+    }
+
+    /// <summary>
+    /// Deleting a category that has linked MetasGasto must cascade-delete
+    /// the MetasGasto records and succeed without FK errors.
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteCategoria_WithLinkedMetasGasto_CascadeDeletes()
+    {
+        // Arrange
+        await using var context = CreateInMemoryContext();
+        var catRepo = new CategoryRepository(context);
+
+        var categoria = new Categoria { Id = Guid.NewGuid(), Name = "Lazer" };
+        await catRepo.AddAsync(categoria);
+
+        var meta = new MetaGasto
+        {
+            Id = Guid.NewGuid(),
+            CategoryId = categoria.Id,
+            Month = 7,
+            Year = 2026,
+            TargetAmount = 300.00m
+        };
+        await context.MetasGasto.AddAsync(meta);
+        await context.SaveChangesAsync();
+
+        // Act
+        await catRepo.DeleteAsync(categoria.Id);
+
+        // Assert
+        var retrievedCat = await catRepo.GetByIdAsync(categoria.Id);
+        Assert.IsNull(retrievedCat, "Category should be deleted.");
+
+        var retrievedMeta = await context.MetasGasto.FindAsync(meta.Id);
+        Assert.IsNull(retrievedMeta, "MetaGasto should be cascade-deleted.");
+    }
 }
+

@@ -14,7 +14,9 @@ public class TransactionRepository : ITransactionRepository
 
     public async Task<IEnumerable<Transacao>> GetAllAsync()
     {
-        return await _context.Transacoes.ToListAsync();
+        return await _context.Transacoes
+            .Include(t => t.Categoria)
+            .ToListAsync();
     }
 
     public async Task<Transacao?> GetByIdAsync(Guid id)
@@ -45,6 +47,11 @@ public class TransactionRepository : ITransactionRepository
         var transaction = await _context.Transacoes.FindAsync(id);
         if (transaction != null)
         {
+            // Detach category reference to prevent SQLite FK constraint
+            // errors when the change tracker tries to cascade operations.
+            transaction.CategoryId = null;
+            transaction.Categoria = null;
+
             _context.Transacoes.Remove(transaction);
             await _context.SaveChangesAsync();
         }
@@ -62,7 +69,9 @@ public class TransactionRepository : ITransactionRepository
     public async Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year)
     {
         return await _context.Transacoes
+            .Include(t => t.Categoria)
             .Where(t => t.Date.Month == month && t.Date.Year == year)
             .ToListAsync();
     }
 }
+

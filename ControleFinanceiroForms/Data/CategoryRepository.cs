@@ -46,6 +46,25 @@ public class CategoryRepository : ICategoryRepository
         var category = await _context.Categorias.FindAsync(id);
         if (category != null)
         {
+            // Explicitly dissociate linked transactions (set CategoryId = null)
+            // because SQLite does not automatically apply ON DELETE SET NULL
+            // when EF Core issues the DELETE statement.
+            var linkedTransactions = await _context.Transacoes
+                .Where(t => t.CategoryId == id)
+                .ToListAsync();
+            foreach (var tx in linkedTransactions)
+            {
+                tx.CategoryId = null;
+                tx.Categoria = null;
+            }
+
+            // Remove linked MetasGasto (cascade is configured, but explicit
+            // removal avoids SQLite FK enforcement issues).
+            var linkedMetas = await _context.MetasGasto
+                .Where(m => m.CategoryId == id)
+                .ToListAsync();
+            _context.MetasGasto.RemoveRange(linkedMetas);
+
             _context.Categorias.Remove(category);
             await _context.SaveChangesAsync();
         }

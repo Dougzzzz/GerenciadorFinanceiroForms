@@ -555,5 +555,159 @@ public sealed class AppDbContextIntegrationTests
         var retrievedMeta = await context.MetasGasto.FindAsync(meta.Id);
         Assert.IsNull(retrievedMeta, "MetaGasto should be cascade-deleted.");
     }
+    // ─────────────────────────────────────────────────────────────
+    // Coverage improvement tests
+    // ─────────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public async Task CategoryRepository_GetAllAsync_ReturnsAllCategories()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new CategoryRepository(context);
+        await repo.AddAsync(new Categoria { Id = Guid.NewGuid(), Name = "Cat1" });
+        await repo.AddAsync(new Categoria { Id = Guid.NewGuid(), Name = "Cat2" });
+
+        var categories = await repo.GetAllAsync();
+        Assert.AreEqual(2, categories.Count());
+    }
+
+    [TestMethod]
+    public async Task CategoryRepository_UpdateAsync_ModifiesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new CategoryRepository(context);
+        var cat = new Categoria { Id = Guid.NewGuid(), Name = "OldName" };
+        await repo.AddAsync(cat);
+
+        cat.Name = "NewName";
+        await repo.UpdateAsync(cat);
+
+        var retrieved = await repo.GetByIdAsync(cat.Id);
+        Assert.AreEqual("NewName", retrieved?.Name);
+    }
+
+    [TestMethod]
+    public async Task InvestmentRepository_GetAllAsync_ReturnsAllInvestments()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        await repo.AddAsync(new Investimento { Id = Guid.NewGuid(), TotalValue = 100, TipoInvestimento = "A" });
+        await repo.AddAsync(new Investimento { Id = Guid.NewGuid(), TotalValue = 200, TipoInvestimento = "B" });
+
+        var investments = await repo.GetAllAsync();
+        Assert.AreEqual(2, investments.Count());
+    }
+
+    [TestMethod]
+    public async Task InvestmentRepository_DeleteAsync_RemovesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new InvestmentRepository(context);
+        var inv = new Investimento { Id = Guid.NewGuid(), TotalValue = 100 };
+        await repo.AddAsync(inv);
+
+        await repo.DeleteAsync(inv.Id);
+
+        var retrieved = await repo.GetByIdAsync(inv.Id);
+        Assert.IsNull(retrieved);
+    }
+
+    [TestMethod]
+    public async Task ParcelamentoRepository_GetAllAsync_ReturnsAll()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new ParcelamentoRepository(context);
+        await repo.AddAsync(new Parcelamento { Id = Guid.NewGuid(), Descricao = "P1", DataInicio = DateTime.Today });
+        await repo.AddAsync(new Parcelamento { Id = Guid.NewGuid(), Descricao = "P2", DataInicio = DateTime.Today });
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetAllAsync_ReturnsAll()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        await repo.AddAsync(Transacao.Create(DateTime.Today, "T1", 10));
+        await repo.AddAsync(Transacao.Create(DateTime.Today, "T2", 20));
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_AddRangeAsync_AddsMultiple()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var batch = new[]
+        {
+            Transacao.Create(DateTime.Today, "B1", 10),
+            Transacao.Create(DateTime.Today, "B2", 20)
+        };
+
+        await repo.AddRangeAsync(batch);
+
+        var results = await repo.GetAllAsync();
+        Assert.AreEqual(2, results.Count());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetByMonthAsync_FiltersCorrectly()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 8, 1), "Aug", 10));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 9, 1), "Sep", 20));
+
+        var results = await repo.GetByMonthAsync(8, 2026);
+        Assert.AreEqual(1, results.Count());
+        Assert.AreEqual("Aug", results.First().Description);
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_GetByDateRangeAsync_FiltersCorrectly()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 7, 10), "In Range", 10));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 7, 15), "In Range 2", 20));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 8, 1), "Out of Range", 30));
+        await repo.AddAsync(Transacao.Create(new DateTime(2026, 6, 30), "Out of Range 2", 40));
+
+        var results = await repo.GetByDateRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
+        
+        Assert.AreEqual(2, results.Count());
+        Assert.IsTrue(results.All(t => t.Date.Month == 7));
+    }
+    [TestMethod]
+    public async Task TransactionRepository_GetExistingHashesAsync_ReturnsMatches()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var tx = Transacao.Create(DateTime.Today, "Unique Hash", 10);
+        await repo.AddAsync(tx);
+
+        var results = await repo.GetExistingHashesAsync(new[] { tx.ChaveExclusiva, "NonExistent" });
+        Assert.AreEqual(1, results.Count());
+        Assert.AreEqual(tx.ChaveExclusiva, results.First());
+    }
+
+    [TestMethod]
+    public async Task TransactionRepository_UpdateAsync_ModifiesEntity()
+    {
+        await using var context = CreateInMemoryContext();
+        var repo = new TransactionRepository(context);
+        var tx = Transacao.Create(DateTime.Today, "Old Desc", 10);
+        await repo.AddAsync(tx);
+
+        tx.Description = "New Desc";
+        await repo.UpdateAsync(tx);
+
+        var retrieved = await repo.GetByIdAsync(tx.Id);
+        Assert.AreEqual("New Desc", retrieved?.Description);
+    }
 }
 

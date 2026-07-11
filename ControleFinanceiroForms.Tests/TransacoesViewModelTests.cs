@@ -45,10 +45,9 @@ public class TransacoesViewModelTests
     [TestMethod]
     public async Task LoadTransacoesAsync_PopulatesTransacoesForCurrentMonth()
     {
-        // Arrange
         var today = DateTime.Today;
-        _viewModel.SelectedMonth = today.Month;
-        _viewModel.SelectedYear = today.Year;
+        _viewModel.StartDate = new DateTime(today.Year, today.Month, 1);
+        _viewModel.EndDate = _viewModel.StartDate.AddMonths(1).AddDays(-1);
 
         var tx1 = Transacao.Create(today, "Supermercado", -100m);
         var tx2 = Transacao.Create(today, "Restaurante", -50m);
@@ -158,5 +157,6 @@ public class TransacoesViewModelTests
         public Task DeleteAsync(Guid id) => throw new InvalidOperationException("FOREIGN KEY constraint failed");
         public Task<IEnumerable<string>> GetExistingHashesAsync(IEnumerable<string> hashes) => Task.FromResult(Enumerable.Empty<string>());
         public Task<IEnumerable<Transacao>> GetByMonthAsync(int month, int year) => Task.FromResult(Enumerable.Empty<Transacao>());
+        public Task<IEnumerable<Transacao>> GetByDateRangeAsync(DateTime start, DateTime end) => Task.FromResult(Enumerable.Empty<Transacao>());
     }
 }

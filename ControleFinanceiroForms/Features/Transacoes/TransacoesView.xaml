@@ -29,36 +29,26 @@
         <!-- Filtros de Mês/Ano -->
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             
-            <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                <TextBlock Text="Mês" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
-                <TextBox x:Name="MonthTextBox" 
-                         Text="{Binding SelectedMonth, UpdateSourceTrigger=PropertyChanged}" 
-                         Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <TextBlock Text="De:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding StartDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                
+                <TextBlock Text="Até:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding EndDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                
+                <Button Content="Filtrar" Command="{Binding LoadTransacoesCommand}"
+                        Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold"
+                        Padding="16,8" BorderThickness="0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
             </StackPanel>
-
-            <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                <TextBlock Text="Ano" FontSize="14" Foreground="#101114" Margin="0,0,0,4"/>
-                <TextBox x:Name="YearTextBox" 
-                         Text="{Binding SelectedYear, UpdateSourceTrigger=PropertyChanged}" 
-                         Padding="8" FontSize="16" BorderBrush="#dedee5" BorderThickness="1"/>
-            </StackPanel>
-
-            <Button Grid.Column="2" Content="Filtrar" VerticalAlignment="Bottom"
-                    Command="{Binding LoadTransacoesCommand}"
-                    Background="#7132f5" Foreground="#ffffff" 
-                    FontSize="16" FontWeight="SemiBold" 
-                    Padding="16,10" BorderThickness="0" Cursor="Hand">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="12"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
         </Grid>
 
         <!-- Mensagem de erro -->

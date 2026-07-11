@@ -40,6 +40,12 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private bool _isGeneralOverBudget;
 
+    [ObservableProperty]
+    private DateTime _startDate;
+
+    [ObservableProperty]
+    private DateTime _endDate;
+
     public ObservableCollection<DashboardItem> DashboardItems { get; } = new();
 
     public ObservableCollection<Transacao> CreditTransactions { get; } = new();
@@ -49,6 +55,10 @@ public partial class DashboardViewModel : ObservableObject
     {
         _categoryRepository = categoryRepository;
         _transactionRepository = transactionRepository;
+
+        var today = DateTime.Today;
+        _startDate = new DateTime(today.Year, today.Month, 1);
+        _endDate = _startDate.AddMonths(1).AddDays(-1);
     }
 
     [RelayCommand]
@@ -56,12 +66,8 @@ public partial class DashboardViewModel : ObservableObject
     {
         var categories = await _categoryRepository.GetAllAsync();
 
-        var today = DateTime.Today;
-        var currentMonth = today.Month;
-        var currentYear = today.Year;
-
-        // Filtrar transações no banco de dados (review-002 issue 004)
-        var currentTransactions = await _transactionRepository.GetByMonthAsync(currentMonth, currentYear);
+        // Filtrar transações no banco de dados por faixa de data
+        var currentTransactions = await _transactionRepository.GetByDateRangeAsync(StartDate, EndDate);
 
         var items = new List<DashboardItem>();
         decimal totalBudget = 0;

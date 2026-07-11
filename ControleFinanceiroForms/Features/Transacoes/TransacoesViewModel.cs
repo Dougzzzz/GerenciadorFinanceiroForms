@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ControleFinanceiroForms.Data;
 using ControleFinanceiroForms.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ControleFinanceiroForms.Features.Transacoes;
 
@@ -21,10 +22,10 @@ public partial class TransacoesViewModel : ObservableObject
     private string? _errorMessage;
 
     [ObservableProperty]
-    private int _selectedMonth;
+    private DateTime _startDate;
 
     [ObservableProperty]
-    private int _selectedYear;
+    private DateTime _endDate;
 
     public TransacoesViewModel(
         ITransactionRepository transactionRepository,
@@ -34,8 +35,8 @@ public partial class TransacoesViewModel : ObservableObject
         _categoryRepository = categoryRepository;
 
         var today = DateTime.Today;
-        _selectedMonth = today.Month;
-        _selectedYear = today.Year;
+        _startDate = new DateTime(today.Year, today.Month, 1);
+        _endDate = _startDate.AddMonths(1).AddDays(-1);
     }
 
     [RelayCommand]
@@ -50,7 +51,7 @@ public partial class TransacoesViewModel : ObservableObject
             Categories.Add(cat);
         }
 
-        var items = await _transactionRepository.GetByMonthAsync(SelectedMonth, SelectedYear);
+        var items = await _transactionRepository.GetByDateRangeAsync(StartDate, EndDate);
         Transacoes.Clear();
         foreach (var item in items.OrderByDescending(t => t.Date))
         {
@@ -69,6 +70,10 @@ public partial class TransacoesViewModel : ObservableObject
             await _transactionRepository.DeleteAsync(transacao.Id);
             Transacoes.Remove(transacao);
         }
+        catch (DbUpdateException ex)
+        {
+            ErrorMessage = $"Erro de banco de dados ao excluir transação: {ex.InnerException?.Message ?? ex.Message}";
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Erro ao excluir transação: {ex.Message}";
@@ -84,6 +89,11 @@ public partial class TransacoesViewModel : ObservableObject
         try
         {
             await _transactionRepository.UpdateAsync(transacao);
+        }
+        catch (DbUpdateException ex)
+        {
+            ErrorMessage = $"Erro de banco de dados ao atualizar transação: {ex.InnerException?.Message ?? ex.Message}";
+            await LoadTransacoesAsync();
         }
         catch (Exception ex)
         {

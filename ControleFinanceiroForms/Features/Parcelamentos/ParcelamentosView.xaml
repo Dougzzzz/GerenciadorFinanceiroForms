@@ -93,12 +93,12 @@
 
                             <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                 <TextBlock Text="Valor Total" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorTotal, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox Text="{Binding NewValorTotal}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                 <TextBlock Text="Parcelas" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewNumeroParcelas, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox Text="{Binding NewNumeroParcelas}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="3" Margin="0,0,8,0">
@@ -211,7 +211,7 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
                                 <TextBlock Text="Valor Pago" FontSize="12" Foreground="#686b82" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding NewValorPago, UpdateSourceTrigger=PropertyChanged}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
+                                <TextBox Text="{Binding NewValorPago}" Padding="6" BorderBrush="#dedee5" BorderThickness="1"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,8">

@@ -50,13 +50,37 @@
         </Grid.RowDefinitions>
 
         <!-- Título e Subtítulo -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Dashboard" 
-                       FontSize="36" FontWeight="Bold" Foreground="#101114" 
-                       Margin="0,0,0,4"/>
-            <TextBlock Text="Acompanhamento passivo dos seus gastos e metas mensais do mês corrente." 
-                       FontSize="16" Foreground="#686b82"/>
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Dashboard" 
+                           FontSize="36" FontWeight="Bold" Foreground="#101114" 
+                           Margin="0,0,0,4"/>
+                <TextBlock Text="Acompanhamento passivo dos seus gastos e metas." 
+                           FontSize="16" Foreground="#686b82"/>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="De:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding StartDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                
+                <TextBlock Text="Até:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#101114" FontWeight="SemiBold"/>
+                <DatePicker SelectedDate="{Binding EndDate}" Width="110" Margin="0,0,16,0" Padding="4"/>
+                
+                <Button Content="Filtrar" Command="{Binding LoadDashboardCommand}"
+                        Background="#7132f5" Foreground="#ffffff" FontWeight="SemiBold"
+                        Padding="16,8" BorderThickness="0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Grid>
 
         <!-- Cards Superiores de Resumo -->
         <Grid Grid.Row="1" Margin="-8,0,-8,16">

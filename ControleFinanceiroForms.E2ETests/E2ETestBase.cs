@@ -24,12 +24,14 @@ public class E2ETestBase
         // Ensure path to the main application executable
         var baseDir = AppContext.BaseDirectory;
         // Navigation from E2ETests bin -> main project bin
-        // Typical path: E2ETests/bin/Debug/net9.0-windows/ -> ../../../../ControleFinanceiroForms/bin/Debug/net9.0-windows/
-        var appPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "ControleFinanceiroForms", "bin", "Debug", "net9.0-windows", "ControleFinanceiroForms.exe"));
+        var debugPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "ControleFinanceiroForms", "bin", "Debug", "net9.0-windows", "ControleFinanceiroForms.exe"));
+        var releasePath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "ControleFinanceiroForms", "bin", "Release", "net9.0-windows", "ControleFinanceiroForms.exe"));
         
+        var appPath = File.Exists(debugPath) ? debugPath : releasePath;
+
         if (!File.Exists(appPath))
         {
-            Assert.Fail($"Application executable not found at: {appPath}");
+            Assert.Fail($"Application executable not found at: {debugPath} or {releasePath}");
         }
 
         // Launch app with the override flag

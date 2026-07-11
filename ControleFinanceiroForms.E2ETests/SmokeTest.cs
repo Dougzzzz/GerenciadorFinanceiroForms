@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ControleFinanceiroForms.E2ETests;
 
 [TestClass]
+[TestCategory("E2E")]
 public class SmokeTest : E2ETestBase
 {
     [TestMethod]
